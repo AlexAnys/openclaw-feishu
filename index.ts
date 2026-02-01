@@ -12,7 +12,7 @@ import { feishuDock, feishuPlugin } from "./src/channel.js";
 import { setFeishuRuntime } from "./src/runtime.js";
 
 const plugin = {
-  id: "feishu-openclaw",
+  id: "feishu",
   name: "Feishu",
   description: "Feishu (Lark) channel plugin — WebSocket long-connection bot",
 

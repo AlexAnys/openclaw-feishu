@@ -1,5 +1,5 @@
 {
-  "id": "feishu-openclaw",
+  "id": "feishu",
   "name": "Feishu",
   "description": "Feishu (飞书/Lark) channel plugin — WebSocket long-connection bot",
   "version": "0.4.0",

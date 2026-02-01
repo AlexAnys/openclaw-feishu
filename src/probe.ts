@@ -1,14 +1,14 @@
 /**
  * Feishu API connectivity probe.
+ *
+ * Validates credentials by fetching a tenant_access_token.
  */
-
-import * as Lark from "@larksuiteoapi/node-sdk";
 
 import type { FeishuProbeResult } from "./types.js";
 
 /**
- * Probe the Feishu API by fetching bot info.
- * Uses the internal tenant access token endpoint.
+ * Probe the Feishu API by fetching tenant_access_token.
+ * This is the standard way to validate appId + appSecret.
  */
 export async function probeFeishu(
   appId: string,
@@ -20,34 +20,59 @@ export async function probeFeishu(
   }
 
   const startTime = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const client = new Lark.Client({
-      appId: appId.trim(),
-      appSecret: appSecret.trim(),
-      domain: Lark.Domain.Feishu,
-      appType: Lark.AppType.SelfBuild,
-    });
+    // Use the internal tenant_access_token endpoint to validate credentials
+    const response = await fetch(
+      "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          app_id: appId.trim(),
+          app_secret: appSecret.trim(),
+        }),
+        signal: controller.signal,
+      },
+    );
 
-    // Use bot info endpoint to validate credentials
-    const response = await (client as unknown as { bot: { v3: { botInfo: { get: (opts: Record<string, unknown>) => Promise<{ data?: { bot?: Record<string, unknown> } }> } } } }).bot.v3.botInfo.get({});
-
+    clearTimeout(timeout);
     const elapsedMs = Date.now() - startTime;
 
-    const bot = response?.data?.bot;
-    if (bot) {
+    if (!response.ok) {
       return {
-        ok: true,
-        bot: {
-          name: (bot as Record<string, unknown>).bot_name as string | undefined,
-          openId: (bot as Record<string, unknown>).open_id as string | undefined,
-        },
+        ok: false,
+        error: `HTTP ${response.status}: ${response.statusText}`,
         elapsedMs,
       };
     }
 
-    return { ok: true, elapsedMs };
+    const data = (await response.json()) as {
+      code?: number;
+      msg?: string;
+      tenant_access_token?: string;
+      expire?: number;
+    };
+
+    if (data.code !== 0) {
+      return {
+        ok: false,
+        error: data.msg || `API error code: ${data.code}`,
+        elapsedMs,
+      };
+    }
+
+    // Credentials are valid if we got a token
+    return {
+      ok: true,
+      elapsedMs,
+      // Note: We don't have bot info from this endpoint,
+      // but credentials are verified
+    };
   } catch (err) {
+    clearTimeout(timeout);
     const elapsedMs = Date.now() - startTime;
 
     if (err instanceof Error) {
