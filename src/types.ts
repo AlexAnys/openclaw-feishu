@@ -2,6 +2,16 @@
  * Feishu channel plugin — type definitions.
  */
 
+/** Per-group configuration. */
+export type FeishuGroupConfig = {
+  /**
+   * When true (default), only respond when the bot is @-mentioned or
+   * the message matches the smart group filter heuristics.
+   * Set to false to receive and respond to ALL messages in this group.
+   */
+  requireMention?: boolean;
+};
+
 /** Per-account configuration stored in clawdbot.json channels.feishu */
 export type FeishuAccountConfig = {
   /** Optional display name for this account. */
@@ -22,6 +32,16 @@ export type FeishuAccountConfig = {
   botNames?: string[];
   /** Max inbound media size in MB. */
   mediaMaxMb?: number;
+  /**
+   * Per-group overrides keyed by Feishu chat_id.
+   * Example: `{ "oc_xxx": { "requireMention": false } }`
+   */
+  groups?: Record<string, FeishuGroupConfig>;
+  /**
+   * Default requireMention for all groups not listed in `groups`.
+   * Default: true (use smart filter / require @-mention).
+   */
+  requireMention?: boolean;
 };
 
 /** Top-level Feishu config section (channels.feishu). */

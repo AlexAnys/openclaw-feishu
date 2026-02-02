@@ -132,7 +132,13 @@ async function handleIncomingMessage(
   if (chatType === "group") {
     const mentions = Array.isArray(message.mentions) ? (message.mentions as unknown[]) : [];
     text = text.replace(/@_user_\d+\s*/g, "").trim();
-    if (!text || !shouldRespondInGroup(text, mentions, ctx.botNames)) return;
+    if (!text) return;
+
+    // Check per-group and account-level requireMention config
+    const groupCfg = ctx.account.config.groups?.[chatId];
+    const requireMention = groupCfg?.requireMention ?? ctx.account.config.requireMention ?? true;
+
+    if (requireMention && !shouldRespondInGroup(text, mentions, ctx.botNames)) return;
   }
 
   ctx.statusSink?.({ lastInboundAt: Date.now() });
