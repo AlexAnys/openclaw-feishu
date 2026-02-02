@@ -19,7 +19,7 @@ Feishu × AI Assistant plugin — no server required
 帮我安装飞书插件: https://github.com/AlexAnys/openclaw-feishu
 ```
 
-OpenClaw 会自动安装、配置、重启。
+OpenClaw 会自动安装、配置、重启，然后需要 App ID和 Secrect，在下方创建机器人后拿到发给它，然后配置事件订阅发布机器人应用更新，就可以测试啦。
 
 ### Clawdbot
 
