@@ -265,3 +265,9 @@ async function handleIncomingMessage(
     }
   }
 }
+
+// For tests only: allow unit/integration tests to call internal logic without starting a real WS client.
+// This is intentionally not part of the public plugin API.
+export const __internal = {
+  handleIncomingMessage,
+};

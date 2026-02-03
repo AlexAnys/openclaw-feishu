@@ -1,0 +1,64 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # OpenClaw CLI currently requires Node >= 22.12.0
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      # NOTE: this repo uses a dual-build script that generates src/sdk.ts temporarily.
+      # Running plain "tsc --noEmit" without that generation will fail.
+      # The build step runs tsc for both OpenClaw and Clawdbot targets and effectively serves as typecheck.
+      - name: Build (includes TypeScript compile)
+        run: npm run build
+
+      - name: Unit + integration tests (simulated Feishu events)
+        run: npm test
+
+      - name: Pack (simulate publish artifact)
+        run: |
+          npm pack --silent
+          ls -lah *.tgz
+
+      - name: Verify package contents (quick sanity)
+        run: |
+          TGZ=$(ls -1 *.tgz | head -n 1)
+          echo "Using $TGZ"
+          tar -tf "$TGZ" | sed -n '1,80p'
+          # Must include manifests + dist outputs
+          tar -tf "$TGZ" | grep -q "package/openclaw.plugin.json"
+          tar -tf "$TGZ" | grep -q "package/clawdbot.plugin.json"
+          tar -tf "$TGZ" | grep -q "package/dist/index.openclaw.js"
+          tar -tf "$TGZ" | grep -q "package/dist/index.clawdbot.js"
+
+      - name: OpenClaw CLI smoke test (dev profile)
+        run: |
+          TGZ=$(ls -1 *.tgz | head -n 1)
+          echo "Installing into OpenClaw dev profile: $TGZ"
+
+          # Use dev profile to avoid relying on any pre-existing local config.
+          npx -y openclaw@2026.2.1 --dev plugins install "$TGZ"
+
+          # If plugin id mismatch / loader errors, doctor should report it.
+          npx -y openclaw@2026.2.1 --dev plugins doctor
+
+          # Verify the plugin is discoverable.
+          npx -y openclaw@2026.2.1 --dev plugins info feishu-openclaw --json

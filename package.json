@@ -104,7 +104,9 @@
     "clean": "rm -rf dist src/sdk.ts",
     "prepublishOnly": "npm run clean && npm run build",
     "version": "node scripts/sync-version.js && git add *.plugin.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:ci": "node --test test/*.test.mjs",
+    "test": "npm run build && npm run test:ci"
   },
   "peerDependencies": {
     "clawdbot": ">=2026.1.20",
