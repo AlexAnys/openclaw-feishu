@@ -1,7 +1,7 @@
 # feishu-openclaw
 
 飞书 × OpenClaw 保姆级配置指南 & 社区支持  
-**让每个人都能用飞书接入 AI 助手，不管你是不是技术背景。**
+**让每个人都能用飞书轻松接入Openclaw (原Clawdbot）。**
 
 ---
 
