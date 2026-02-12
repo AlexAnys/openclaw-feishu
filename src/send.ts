@@ -14,6 +14,13 @@ import {
   uploadImage,
 } from "./media.js";
 
+/** Resolve the correct receive_id_type based on ID prefix. */
+function resolveReceiveIdType(id: string): "chat_id" | "open_id" | "union_id" {
+  if (id.startsWith("ou_")) return "open_id";
+  if (id.startsWith("on_")) return "union_id";
+  return "chat_id";
+}
+
 /**
  * Send a text message to a Feishu chat.
  */
@@ -40,7 +47,7 @@ export async function sendTextMessage(
     }
 
     const res = await client.im.message.create({
-      params: { receive_id_type: "chat_id" },
+      params: { receive_id_type: resolveReceiveIdType(chatId.trim()) },
       data: {
         receive_id: chatId.trim(),
         msg_type: "text",
@@ -113,7 +120,7 @@ export async function sendMediaMessage(
       });
     } else {
       await client.im.message.create({
-        params: { receive_id_type: "chat_id" },
+        params: { receive_id_type: resolveReceiveIdType(chatId.trim()) },
         data: { receive_id: chatId.trim(), content, msg_type: msgType },
       });
     }
@@ -121,7 +128,7 @@ export async function sendMediaMessage(
     // Send accompanying text as separate message if provided
     if (text?.trim()) {
       await client.im.message.create({
-        params: { receive_id_type: "chat_id" },
+        params: { receive_id_type: resolveReceiveIdType(chatId.trim()) },
         data: {
           receive_id: chatId.trim(),
           content: JSON.stringify({ text }),
@@ -136,7 +143,7 @@ export async function sendMediaMessage(
     try {
       const fallbackText = text ? `${text}\n${mediaUrl}` : mediaUrl;
       const res = await client.im.message.create({
-        params: { receive_id_type: "chat_id" },
+        params: { receive_id_type: resolveReceiveIdType(chatId.trim()) },
         data: {
           receive_id: chatId.trim(),
           content: JSON.stringify({ text: fallbackText }),
