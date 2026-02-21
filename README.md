@@ -359,6 +359,17 @@ openclaw gateway install
 
 > 遇到问题先看这里。如果没找到答案，欢迎开 [Issue](https://github.com/AlexAnys/openclaw-feishu/issues)。
 
+### 没有消息发送框？（最常见）
+
+这是因为**事件订阅没有配置**。JSON 批量导入权限不会自动配置事件订阅，需要手动添加：
+
+1. 飞书开放平台 → 你的应用 → **事件与回调**
+2. 添加事件：`im.message.receive_v1`（接收消息 v2.0）
+3. 订阅方式：选择 **「使用长连接接收事件」**
+4. **版本管理** → 创建新版本 → 发布上线
+
+> ⚠️ 配置事件订阅前，确保 OpenClaw/Clawdbot Gateway 已启动，否则长连接验证会失败。
+
 ### 机器人完全没反应（收不到消息）
 
 按顺序检查：
