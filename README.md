@@ -450,17 +450,7 @@ openclaw pairing approve feishu <配对码>
 
 ### Lark（国际版）用户
 
-如果你用的是 Lark 而不是飞书，需要在配置中指定域名：
-
-```json5
-{
-  channels: {
-    feishu: {
-      domain: "lark"
-    }
-  }
-}
-```
+Lark 不支持 WebSocket 长连接，需要用 **Webhook 模式**。详见 [Lark 接入指南](#-lark国际版接入指南)。
 
 ---
 
@@ -688,6 +678,102 @@ OpenClaw 已内置官方飞书插件（`@openclaw/feishu`），本项目继续�
 - 🔌 [GitHub: openclaw-feishu](https://github.com/AlexAnys/openclaw-feishu)（本项目）
 - 🌉 [GitHub: feishu-openclaw](https://github.com/AlexAnys/feishu-openclaw)（独立桥接）
 - 📦 [npm: feishu-openclaw](https://www.npmjs.com/package/feishu-openclaw)
+
+---
+
+## 🌏 Lark（国际版）接入指南
+
+> 飞书国际版（Lark）不支持 WebSocket 长连接，需要使用 **Webhook 模式**。
+> Webhook 模式下，Lark 的服务器需要能访问到你运行 OpenClaw 的机器。
+
+### 与飞书版的区别
+
+| | 飞书（国内版） | Lark（国际版） |
+|---|---|---|
+| 连接方式 | WebSocket 长连接 ✅ | **Webhook HTTP 回调** |
+| 需要公网？ | ❌ 不需要 | ✅ 需要（或用隧道） |
+| 开发者平台 | [open.feishu.cn](https://open.feishu.cn) | [open.larksuite.com](https://open.larksuite.com) |
+
+### 第一步：配置 OpenClaw
+
+在 `~/.openclaw/openclaw.json` 中配置飞书渠道：
+
+```json5
+{
+  channels: {
+    feishu: {
+      domain: "lark",
+      connectionMode: "webhook",
+      webhookPort: 3000,
+      webhookPath: "/feishu/events",
+      accounts: {
+        main: {
+          appId: "cli_xxxxxxxxx",
+          appSecret: "你的AppSecret"
+        }
+      }
+    }
+  }
+}
+```
+
+> 也可以把 `domain`、`connectionMode` 等字段放在 account 级别，这样可以一个 account 连飞书、另一个连 Lark。
+
+### 第二步：暴露本地端口到公网
+
+Lark 需要能访问到你的 webhook 地址。推荐使用 **Cloudflare Tunnel**（免费、稳定）：
+
+```bash
+# 安装 cloudflared（macOS）
+brew install cloudflared
+
+# 一键暴露本地 3000 端口（临时，用于测试）
+cloudflared tunnel --url http://localhost:3000
+```
+
+运行后会得到一个公网 URL，类似：`https://xxx-yyy-zzz.trycloudflare.com`
+
+> **与 VPN/代理兼容性**：Cloudflare Tunnel 不创建虚拟网卡、不修改系统路由表，与 Clash Verge、V2Ray 等代理工具**完全兼容**，可以同时使用。
+
+如需固定域名（推荐正式使用时配置）：
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create feishu-bot
+cloudflared tunnel route dns feishu-bot feishu.yourdomain.com
+cloudflared tunnel run --url http://localhost:3000 feishu-bot
+```
+
+其他隧道方案也可以：
+- **ngrok**：`ngrok http 3000`（免费版 URL 会变）
+- **Tailscale Funnel**：如果你已在用 Tailscale，配置最简单
+
+### 第三步：配置 Lark 后台
+
+1. 打开 [Lark Developer Console](https://open.larksuite.com/app)
+2. 创建应用、添加机器人能力（操作步骤同飞书版）
+3. 进入 **Event Subscriptions**：
+   - **Request URL** 填入你的公网地址 + webhook 路径，例如：
+     `https://xxx-yyy-zzz.trycloudflare.com/feishu/events`
+   - Lark 会发送一个验证请求，OpenClaw 会自动响应（需要先启动网关）
+4. 添加事件：`Receive messages - im.message.receive_v1`
+5. 权限配置同飞书版
+
+### 第四步：启动并验证
+
+```bash
+openclaw gateway restart
+openclaw logs --follow
+```
+
+看到类似 `Webhook server listening on port 3000` 就说明启动成功。
+
+### 注意事项
+
+- Webhook 模式下，OpenClaw 网关必须持续运行且公网可访问
+- 如果使用临时隧道（`cloudflared tunnel --url`），每次重启 URL 会变，需要去 Lark 后台更新 Request URL
+- 建议正式使用时配置固定域名的 Cloudflare Tunnel
+- 飞书国内版也可以使用 webhook 模式（设 `connectionMode: "webhook"`），但没必要——WebSocket 模式更简单
 
 ---
 

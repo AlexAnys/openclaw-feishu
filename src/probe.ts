@@ -4,7 +4,14 @@
  * Validates credentials by fetching a tenant_access_token.
  */
 
-import type { FeishuProbeResult } from "./types.js";
+import type { FeishuDomain, FeishuProbeResult } from "./types.js";
+
+/** Get the base API URL for a given domain. */
+export function getFeishuApiBase(domain?: FeishuDomain): string {
+  return domain === "lark"
+    ? "https://open.larksuite.com"
+    : "https://open.feishu.cn";
+}
 
 /**
  * Probe the Feishu API by fetching tenant_access_token.
@@ -14,6 +21,7 @@ export async function probeFeishu(
   appId: string,
   appSecret: string,
   timeoutMs = 5000,
+  domain?: FeishuDomain,
 ): Promise<FeishuProbeResult> {
   if (!appId?.trim() || !appSecret?.trim()) {
     return { ok: false, error: "Missing appId or appSecret", elapsedMs: 0 };
@@ -22,11 +30,12 @@ export async function probeFeishu(
   const startTime = Date.now();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const apiBase = getFeishuApiBase(domain);
 
   try {
     // Use the internal tenant_access_token endpoint to validate credentials
     const response = await fetch(
-      "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+      `${apiBase}/open-apis/auth/v3/tenant_access_token/internal`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
