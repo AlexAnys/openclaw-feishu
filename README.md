@@ -450,7 +450,7 @@ openclaw pairing approve feishu <配对码>
 
 ### Lark（国际版）用户
 
-Lark 不支持 WebSocket 长连接，需要用 **Webhook 模式**。详见 [Lark 接入指南](#-lark国际版接入指南)。
+Lark 后台不开放 WebSocket 长连接，需要用 **Webhook 模式**。详见 [Lark 接入指南](#-lark国际版接入指南)。
 
 ---
 
@@ -683,8 +683,8 @@ OpenClaw 已内置官方飞书插件（`@openclaw/feishu`），本项目继续�
 
 ## 🌏 Lark（国际版）接入指南
 
-> 飞书国际版（Lark）不支持 WebSocket 长连接，需要使用 **Webhook 模式**。
-> Webhook 模式下，Lark 的服务器需要能访问到你运行 OpenClaw 的机器。
+> Lark 后台目前不开放 WebSocket 长连接能力，所以不能像飞书国内版那样"零公网"直连。
+> 需要改用 **Webhook 模式**：Lark 主动把消息推送到你提供的一个公网 URL。
 
 ### 与飞书版的区别
 
@@ -719,9 +719,20 @@ OpenClaw 已内置官方飞书插件（`@openclaw/feishu`），本项目继续�
 
 > 也可以把 `domain`、`connectionMode` 等字段放在 account 级别，这样可以一个 account 连飞书、另一个连 Lark。
 
-### 第二步：暴露本地端口到公网
+### 第二步：启动网关 + 暴露到公网
 
-Lark 需要能访问到你的 webhook 地址。推荐使用 **Cloudflare Tunnel**（免费、稳定）：
+> ⚠️ **必须先启动网关**，再去 Lark 后台填 URL。因为 Lark 填写 URL 时会立刻发验证请求，网关没启动就会验证失败。
+
+**先启动网关：**
+
+```bash
+openclaw gateway restart
+openclaw logs --follow
+```
+
+看到 `Webhook server listening on port 3000` 说明启动成功。按 `Ctrl+C` 退出日志（网关仍在后台运行）。
+
+**再暴露端口到公网。** 推荐 **Cloudflare Tunnel**（免费、稳定）：
 
 ```bash
 # 安装 cloudflared（macOS）
@@ -732,6 +743,8 @@ cloudflared tunnel --url http://localhost:3000
 ```
 
 运行后会得到一个公网 URL，类似：`https://xxx-yyy-zzz.trycloudflare.com`
+
+**记下这个 URL，下一步要用。**
 
 > **与 VPN/代理兼容性**：Cloudflare Tunnel 不创建虚拟网卡、不修改系统路由表，与 Clash Verge、V2Ray 等代理工具**完全兼容**，可以同时使用。
 
@@ -753,20 +766,22 @@ cloudflared tunnel run --url http://localhost:3000 feishu-bot
 1. 打开 [Lark Developer Console](https://open.larksuite.com/app)
 2. 创建应用、添加机器人能力（操作步骤同飞书版）
 3. 进入 **Event Subscriptions**：
-   - **Request URL** 填入你的公网地址 + webhook 路径，例如：
+   - **Request URL** 填入上一步拿到的公网 URL + webhook 路径，例如：
      `https://xxx-yyy-zzz.trycloudflare.com/feishu/events`
-   - Lark 会发送一个验证请求，OpenClaw 会自动响应（需要先启动网关）
+   - 点保存后 Lark 会立刻发验证请求，OpenClaw 自动通过（前提是网关和隧道都在运行）
+   - 如果验证失败：检查网关是否启动、隧道是否运行、URL 是否拼对
 4. 添加事件：`Receive messages - im.message.receive_v1`
 5. 权限配置同飞书版
 
-### 第四步：启动并验证
+### 第四步：发消息测试
+
+在 Lark 里搜索你的机器人，发一条消息。查看日志确认收到：
 
 ```bash
-openclaw gateway restart
 openclaw logs --follow
 ```
 
-看到类似 `Webhook server listening on port 3000` 就说明启动成功。
+收到正常回复 = 配置完成。
 
 ### 注意事项
 
@@ -774,6 +789,7 @@ openclaw logs --follow
 - 如果使用临时隧道（`cloudflared tunnel --url`），每次重启 URL 会变，需要去 Lark 后台更新 Request URL
 - 建议正式使用时配置固定域名的 Cloudflare Tunnel
 - 飞书国内版也可以使用 webhook 模式（设 `connectionMode: "webhook"`），但没必要——WebSocket 模式更简单
+- 如果你在 Lark 后台开启了事件加密，需要在配置中额外添加 `encryptKey` 和 `verificationToken`（从 Lark 后台的 Encrypt Key / Verification Token 处复制）
 
 ---
 

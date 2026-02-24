@@ -31,6 +31,7 @@ import { probeFeishu } from "./probe.js";
 import { sendTextMessage, sendMediaMessage } from "./send.js";
 import { collectFeishuStatusIssues } from "./status-issues.js";
 import { startFeishuProvider } from "./receive.js";
+import { resolveLarkDomain } from "./lark-domain.js";
 
 import * as Lark from "@larksuiteoapi/node-sdk";
 
@@ -50,11 +51,6 @@ function normalizeFeishuMessagingTarget(raw: string): string | undefined {
   const trimmed = raw?.trim();
   if (!trimmed) return undefined;
   return trimmed.replace(/^(feishu|lark|fs):/i, "");
-}
-
-/** Resolve the Lark SDK domain enum from our config value. */
-function resolveLarkDomain(domain?: string): typeof Lark.Domain.Feishu | typeof Lark.Domain.Lark {
-  return domain === "lark" ? Lark.Domain.Lark : Lark.Domain.Feishu;
 }
 
 /** Create a Feishu Lark.Client for an account. */

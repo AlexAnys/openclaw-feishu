@@ -11,6 +11,7 @@ import * as http from "http";
 import type { ClawdbotConfig } from "clawdbot/plugin-sdk";
 
 import type { ResolvedFeishuAccount } from "./types.js";
+import { resolveLarkDomain } from "./lark-domain.js";
 import { isDuplicate } from "./dedup.js";
 import { shouldRespondInGroup } from "./group-filter.js";
 import { sendTextMessage, updateMessage, deleteMessage } from "./send.js";
@@ -30,11 +31,6 @@ export type FeishuProviderOptions = {
   statusSink?: (patch: Record<string, unknown>) => void;
 };
 
-/** Resolve the Lark SDK domain from config. */
-function resolveLarkDomain(domain?: string): typeof Lark.Domain.Feishu | typeof Lark.Domain.Lark {
-  return domain === "lark" ? Lark.Domain.Lark : Lark.Domain.Feishu;
-}
-
 /** Start the Feishu provider (WebSocket or Webhook). Returns a stop function. */
 export function startFeishuProvider(options: FeishuProviderOptions): { stop: () => void } {
   const { account, config, log, statusSink } = options;
@@ -44,7 +40,16 @@ export function startFeishuProvider(options: FeishuProviderOptions): { stop: () 
   const connectionMode = account.config.connectionMode ?? "websocket";
   const domain = account.config.domain ?? "feishu";
 
-  log.info(`[feishu:${account.accountId}] Starting ${connectionMode} provider (appId=${appId}, domain=${domain})`);
+  if (domain === "lark" && connectionMode === "websocket") {
+    log.error(
+      `[feishu:${account.accountId}] Lark does not support WebSocket. ` +
+      `Please set connectionMode: "webhook" in your config. Falling back to webhook mode.`,
+    );
+  }
+
+  const effectiveMode = domain === "lark" && connectionMode === "websocket" ? "webhook" : connectionMode;
+
+  log.info(`[feishu:${account.accountId}] Starting ${effectiveMode} provider (appId=${appId}, domain=${domain})`);
 
   const sdkDomain = resolveLarkDomain(domain);
 
@@ -82,7 +87,7 @@ export function startFeishuProvider(options: FeishuProviderOptions): { stop: () 
     "im.message.receive_v1": messageHandler,
   });
 
-  if (connectionMode === "webhook") {
+  if (effectiveMode === "webhook") {
     return startWebhookProvider({ account, dispatcher, log, statusSink });
   }
 
@@ -120,7 +125,12 @@ function startWebhookProvider(opts: {
 
   const webhookHandler = Lark.adaptDefault(webhookPath, dispatcher, { autoChallenge: true });
   const server = http.createServer((req, res) => {
-    Promise.resolve(webhookHandler(req, res)).catch((err) => {
+    if (req.url && !req.url.startsWith(webhookPath)) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Not Found");
+      return;
+    }
+    webhookHandler(req, res).catch((err) => {
       log.error(
         `[feishu:${account.accountId}] Webhook handler error: ${err instanceof Error ? err.message : String(err)}`,
       );
@@ -136,13 +146,21 @@ function startWebhookProvider(opts: {
     statusSink?.({ running: true, lastStartAt: Date.now(), mode: "webhook" });
   });
 
-  server.on("error", (err) => {
-    log.error(`[feishu:${account.accountId}] Webhook server error: ${err.message}`);
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      log.error(
+        `[feishu:${account.accountId}] Port ${port} is already in use. ` +
+        `If you have multiple accounts using webhook mode, each needs a different webhookPort.`,
+      );
+    } else {
+      log.error(`[feishu:${account.accountId}] Webhook server error: ${err.message}`);
+    }
     statusSink?.({ running: false, lastError: err.message });
   });
 
   const stop = () => {
     log.info(`[feishu:${account.accountId}] Stopping Webhook server`);
+    server.closeAllConnections();
     server.close();
     statusSink?.({ running: false, lastStopAt: Date.now() });
   };
