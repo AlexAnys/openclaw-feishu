@@ -5,6 +5,14 @@
 
 ---
 
+> ### 🌏 新：Lark（国际版）用户现在可以接入了
+>
+> Lark 不支持 WebSocket，之前只能干瞪眼。现在新增 **Webhook 模式** + Cloudflare Tunnel 方案，四步搞定。
+>
+> **[查看 Lark 接入指南 →](#-lark国际版接入指南)**
+
+---
+
 > ### 🚀 新项目：[OpenCrew](https://github.com/AlexAnys/opencrew) — 把你的 OpenClaw 变成一支 AI 团队
 >
 > 一个 Agent 承担所有事情时，上下文会膨胀、经验会丢失、你会变成瓶颈。
@@ -43,6 +51,7 @@
 - [新手教程：从零配置飞书 AI 机器人](#-新手教程从零配置飞书-ai-机器人)
 - [常见问题 & 排查清单](#-常见问题--排查清单)
 - [进阶配置参考](#-进阶配置参考)
+- [Lark（国际版）接入指南](#-lark国际版接入指南)
 - [独立桥接模式（进阶用户）](#-独立桥接模式进阶用户)
 - [更新日志](#-更新日志)
 - [链接](#-链接)
@@ -649,6 +658,14 @@ tail -n 200 ~/.clawdbot/logs/feishu-bridge.err.log
 ---
 
 ## 📝 更新日志
+
+### 2026.02.24 — Lark 支持 + Webhook 模式 (v0.4.0)
+
+- 🌏 新增 Lark（国际版）支持：`domain: "lark"` 配置
+- 🔗 新增 Webhook 连接模式：解决 Lark 无法使用 WebSocket 的问题
+- 📖 新增 Lark 接入指南：含 Cloudflare Tunnel 内网穿透教程
+- 🛡️ Lark 用户误配 WebSocket 时自动 fallback 到 Webhook 并提示
+- 🔧 端口冲突、graceful shutdown 等稳定性改进
 
 ### 2026.02 — 定位转型
 
