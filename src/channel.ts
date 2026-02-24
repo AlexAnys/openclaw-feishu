@@ -31,6 +31,7 @@ import { probeFeishu } from "./probe.js";
 import { sendTextMessage, sendMediaMessage } from "./send.js";
 import { collectFeishuStatusIssues } from "./status-issues.js";
 import { startFeishuProvider } from "./receive.js";
+import { resolveLarkDomain } from "./lark-domain.js";
 
 import * as Lark from "@larksuiteoapi/node-sdk";
 
@@ -57,7 +58,7 @@ function createFeishuClient(account: ResolvedFeishuAccount): InstanceType<typeof
   return new Lark.Client({
     appId: account.appId,
     appSecret: account.appSecret,
-    domain: Lark.Domain.Feishu,
+    domain: resolveLarkDomain(account.config.domain),
     appType: Lark.AppType.SelfBuild,
   });
 }
@@ -354,7 +355,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
       configured: snapshot.configured ?? false,
       tokenSource: snapshot.tokenSource ?? "none",
       running: snapshot.running ?? false,
-      mode: "websocket",
+      mode: snapshot.mode ?? "websocket",
       lastStartAt: snapshot.lastStartAt ?? null,
       lastStopAt: snapshot.lastStopAt ?? null,
       lastError: snapshot.lastError ?? null,
@@ -362,7 +363,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
       lastProbeAt: snapshot.lastProbeAt ?? null,
     }),
     probeAccount: async ({ account, timeoutMs }) =>
-      probeFeishu(account.appId, account.appSecret, timeoutMs),
+      probeFeishu(account.appId, account.appSecret, timeoutMs, account.config.domain),
     buildAccountSnapshot: ({ account, runtime }) => {
       const configured = Boolean(account.appId?.trim() && account.appSecret?.trim());
       return {
@@ -375,7 +376,8 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
         lastStartAt: runtime?.lastStartAt ?? null,
         lastStopAt: runtime?.lastStopAt ?? null,
         lastError: runtime?.lastError ?? null,
-        mode: "websocket",
+        mode: account.config.connectionMode ?? "websocket",
+        domain: account.config.domain ?? "feishu",
         lastInboundAt: runtime?.lastInboundAt ?? null,
         lastOutboundAt: runtime?.lastOutboundAt ?? null,
         dmPolicy: account.config.dmPolicy ?? "pairing",
@@ -389,7 +391,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
       let feishuBotLabel = "";
 
       try {
-        const probe = await probeFeishu(account.appId, account.appSecret, 3000);
+        const probe = await probeFeishu(account.appId, account.appSecret, 3000, account.config.domain);
         const name = probe.ok ? probe.bot?.name?.trim() : null;
         if (name) feishuBotLabel = ` (${name})`;
         ctx.setStatus({ accountId: account.accountId, bot: probe.bot });

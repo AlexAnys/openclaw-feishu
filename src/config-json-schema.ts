@@ -10,6 +10,20 @@ const feishuAccountJsonSchema = {
     enabled: { type: "boolean" as const },
     appId: { type: "string" as const },
     appSecret: { type: "string" as const },
+    domain: {
+      type: "string" as const,
+      enum: ["feishu", "lark"],
+      description: "feishu = 国内版 (default), lark = 国际版",
+    },
+    connectionMode: {
+      type: "string" as const,
+      enum: ["websocket", "webhook"],
+      description: "websocket = long connection (default, feishu only), webhook = HTTP callback (required for Lark)",
+    },
+    webhookPort: { type: "number" as const },
+    webhookPath: { type: "string" as const },
+    encryptKey: { type: "string" as const },
+    verificationToken: { type: "string" as const },
     dmPolicy: {
       type: "string" as const,
       enum: ["pairing", "allowlist", "open", "disabled"],

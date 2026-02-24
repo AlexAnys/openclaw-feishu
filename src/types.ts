@@ -2,6 +2,12 @@
  * Feishu channel plugin — type definitions.
  */
 
+/** Feishu/Lark domain. "feishu" = 国内版, "lark" = 国际版. */
+export type FeishuDomain = "feishu" | "lark";
+
+/** Connection mode. "websocket" = long connection (feishu only), "webhook" = HTTP callback. */
+export type FeishuConnectionMode = "websocket" | "webhook";
+
 /** Per-account configuration stored in clawdbot.json channels.feishu */
 export type FeishuAccountConfig = {
   /** Optional display name for this account. */
@@ -12,6 +18,18 @@ export type FeishuAccountConfig = {
   appId?: string;
   /** Feishu App Secret. */
   appSecret?: string;
+  /** Feishu/Lark domain. Default: "feishu". */
+  domain?: FeishuDomain;
+  /** Connection mode. Default: "websocket". Lark requires "webhook". */
+  connectionMode?: FeishuConnectionMode;
+  /** Webhook server port (only for webhook mode). Default: 3000. */
+  webhookPort?: number;
+  /** Webhook URL path (only for webhook mode). Default: "/feishu/events". */
+  webhookPath?: string;
+  /** Encrypt key for webhook event verification (optional). */
+  encryptKey?: string;
+  /** Verification token for webhook event verification (optional). */
+  verificationToken?: string;
   /** Direct message access policy (default: pairing). */
   dmPolicy?: "pairing" | "allowlist" | "open" | "disabled";
   /** Allowlist for DM senders (Feishu open_id or union_id). */

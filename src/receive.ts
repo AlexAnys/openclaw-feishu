@@ -1,14 +1,17 @@
 /**
- * Feishu WebSocket message receive handler.
+ * Feishu message receive handler.
  *
- * Connects to Feishu via the SDK's WSClient, dispatches incoming
- * messages to Clawdbot's channel reply infrastructure.
+ * Supports two connection modes:
+ * - WebSocket: SDK's WSClient long connection (feishu only, default)
+ * - Webhook: HTTP server for event callbacks (required for Lark)
  */
 
 import * as Lark from "@larksuiteoapi/node-sdk";
+import * as http from "http";
 import type { ClawdbotConfig } from "clawdbot/plugin-sdk";
 
 import type { ResolvedFeishuAccount } from "./types.js";
+import { resolveLarkDomain } from "./lark-domain.js";
 import { isDuplicate } from "./dedup.js";
 import { shouldRespondInGroup } from "./group-filter.js";
 import { sendTextMessage, updateMessage, deleteMessage } from "./send.js";
@@ -28,44 +31,67 @@ export type FeishuProviderOptions = {
   statusSink?: (patch: Record<string, unknown>) => void;
 };
 
-/** Start the Feishu WebSocket provider. Returns a stop function. */
+/** Start the Feishu provider (WebSocket or Webhook). Returns a stop function. */
 export function startFeishuProvider(options: FeishuProviderOptions): { stop: () => void } {
   const { account, config, log, statusSink } = options;
   const { appId, appSecret } = account;
   const thinkingThresholdMs = account.config.thinkingThresholdMs ?? 2500;
   const botNames = account.config.botNames;
+  const connectionMode = account.config.connectionMode ?? "websocket";
+  const domain = account.config.domain ?? "feishu";
 
-  log.info(`[feishu:${account.accountId}] Starting WebSocket provider (appId=${appId})`);
+  if (domain === "lark" && connectionMode === "websocket") {
+    log.error(
+      `[feishu:${account.accountId}] Lark does not support WebSocket. ` +
+      `Please set connectionMode: "webhook" in your config. Falling back to webhook mode.`,
+    );
+  }
+
+  const effectiveMode = domain === "lark" && connectionMode === "websocket" ? "webhook" : connectionMode;
+
+  log.info(`[feishu:${account.accountId}] Starting ${effectiveMode} provider (appId=${appId}, domain=${domain})`);
+
+  const sdkDomain = resolveLarkDomain(domain);
 
   const sdkConfig = {
     appId,
     appSecret,
-    domain: Lark.Domain.Feishu,
+    domain: sdkDomain,
     appType: Lark.AppType.SelfBuild,
   };
 
   const client = new Lark.Client(sdkConfig);
 
-  const dispatcher = new Lark.EventDispatcher({}).register({
-    "im.message.receive_v1": async (data: Record<string, unknown>) => {
-      try {
-        await handleIncomingMessage(data, {
-          client,
-          account,
-          config,
-          log,
-          thinkingThresholdMs,
-          botNames,
-          statusSink,
-        });
-      } catch (err) {
-        log.error(
-          `[feishu:${account.accountId}] Message handler error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-    },
+  const messageHandler = async (data: Record<string, unknown>) => {
+    try {
+      await handleIncomingMessage(data, {
+        client,
+        account,
+        config,
+        log,
+        thinkingThresholdMs,
+        botNames,
+        statusSink,
+      });
+    } catch (err) {
+      log.error(
+        `[feishu:${account.accountId}] Message handler error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  };
+
+  const dispatcher = new Lark.EventDispatcher({
+    encryptKey: account.config.encryptKey || undefined,
+    verificationToken: account.config.verificationToken || undefined,
+  }).register({
+    "im.message.receive_v1": messageHandler,
   });
 
+  if (effectiveMode === "webhook") {
+    return startWebhookProvider({ account, dispatcher, log, statusSink });
+  }
+
+  // Default: WebSocket mode
   const wsClient = new Lark.WSClient({
     ...sdkConfig,
     loggerLevel: Lark.LoggerLevel.info,
@@ -74,12 +100,68 @@ export function startFeishuProvider(options: FeishuProviderOptions): { stop: () 
   wsClient.start({ eventDispatcher: dispatcher });
 
   log.info(`[feishu:${account.accountId}] WebSocket client started`);
-  statusSink?.({ running: true, lastStartAt: Date.now() });
+  statusSink?.({ running: true, lastStartAt: Date.now(), mode: "websocket" });
 
   const stop = () => {
     log.info(`[feishu:${account.accountId}] Stopping WebSocket provider`);
     // Lark SDK WSClient doesn't expose a clean stop method;
     // rely on abort signal and GC.
+    statusSink?.({ running: false, lastStopAt: Date.now() });
+  };
+
+  return { stop };
+}
+
+/** Start the Webhook HTTP server for receiving Lark/Feishu event callbacks. */
+function startWebhookProvider(opts: {
+  account: ResolvedFeishuAccount;
+  dispatcher: Lark.EventDispatcher;
+  log: FeishuProviderOptions["log"];
+  statusSink?: (patch: Record<string, unknown>) => void;
+}): { stop: () => void } {
+  const { account, dispatcher, log, statusSink } = opts;
+  const port = account.config.webhookPort ?? 3000;
+  const webhookPath = account.config.webhookPath ?? "/feishu/events";
+
+  const webhookHandler = Lark.adaptDefault(webhookPath, dispatcher, { autoChallenge: true });
+  const server = http.createServer((req, res) => {
+    if (req.url && !req.url.startsWith(webhookPath)) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Not Found");
+      return;
+    }
+    webhookHandler(req, res).catch((err) => {
+      log.error(
+        `[feishu:${account.accountId}] Webhook handler error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      if (!res.headersSent) {
+        res.writeHead(500, { "Content-Type": "text/plain" });
+        res.end("Internal Server Error");
+      }
+    });
+  });
+
+  server.listen(port, () => {
+    log.info(`[feishu:${account.accountId}] Webhook server listening on port ${port}, path ${webhookPath}`);
+    statusSink?.({ running: true, lastStartAt: Date.now(), mode: "webhook" });
+  });
+
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      log.error(
+        `[feishu:${account.accountId}] Port ${port} is already in use. ` +
+        `If you have multiple accounts using webhook mode, each needs a different webhookPort.`,
+      );
+    } else {
+      log.error(`[feishu:${account.accountId}] Webhook server error: ${err.message}`);
+    }
+    statusSink?.({ running: false, lastError: err.message });
+  });
+
+  const stop = () => {
+    log.info(`[feishu:${account.accountId}] Stopping Webhook server`);
+    server.closeAllConnections();
+    server.close();
     statusSink?.({ running: false, lastStopAt: Date.now() });
   };
 

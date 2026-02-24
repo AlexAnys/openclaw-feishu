@@ -1,6 +1,6 @@
 {
   "name": "feishu-openclaw",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "type": "module",
   "description": "飞书机器人插件 - 让 AI 助手接入飞书，无需服务器 | Feishu/Lark channel plugin for Clawdbot / OpenClaw",
   "author": "Alex Yang <anyangsen@hotmail.com>",
