@@ -160,9 +160,11 @@ openclaw gateway restart
 
 ---
 
-### 方式二：手动安装插件 + 配置
+### 方式二：不升级 OpenClaw，只加飞书
 
 适用于不想整体升级 OpenClaw、只想加飞书的情况。
+
+> **注意**：OpenClaw ≥ 2026.2 已内置飞书插件，**不需要** `openclaw plugins install`。直接配置即可。
 
 #### 1. 准备好你的飞书凭证
 
@@ -179,12 +181,9 @@ openclaw gateway restart
 1. [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **权限管理** → **批量导入** → 粘贴上方 JSON
 2. 导入后 → **创建新版本** → **发布**
 
-#### 3. 安装并配置
+#### 3. 配置飞书渠道
 
 ```bash
-# 安装官方飞书插件
-openclaw plugins install @openclaw/feishu
-
 # 添加飞书渠道（交互式引导）
 openclaw channels add
 #    → 选择 Feishu
@@ -323,20 +322,19 @@ rm -f ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist
 
 ### 第七步：在 OpenClaw 中配置飞书
 
+> OpenClaw ≥ 2026.2 已内置飞书插件，**不需要额外安装**，直接配置即可。
+
 打开 **终端（Terminal）**：
 
 ```bash
-# 1. 安装飞书插件
-openclaw plugins install @openclaw/feishu
-
-# 2. 添加飞书渠道（交互式，跟着提示走）
+# 1. 添加飞书渠道（交互式，跟着提示走）
 openclaw channels add
 # 选择 Feishu → 粘贴 App ID → 粘贴 App Secret
 
-# 3. 重启网关
+# 2. 重启网关
 openclaw gateway restart
 
-# 4. 查看日志，确认连接成功
+# 3. 查看日志，确认连接成功
 openclaw logs --follow
 ```
 
@@ -456,6 +454,19 @@ openclaw pairing approve feishu <配对码>
 ```
 
 批准后这个飞书用户就可以正常和机器人对话了。这是一次性操作。
+
+### 提示 "duplicate plugin id detected"
+
+这说明飞书插件同时存在于两个位置：OpenClaw 内置目录（stock extension）和用户目录（`~/.openclaw/extensions/feishu/`）。
+
+**原因**：OpenClaw ≥ 2026.2 已内置飞书插件，如果又手动执行了 `openclaw plugins install @openclaw/feishu`，就会产生重复。
+
+**解决**：删除用户目录下的副本，保留内置版本即可：
+
+```bash
+rm -rf ~/.openclaw/extensions/feishu
+openclaw gateway restart
+```
 
 ### Lark（国际版）用户
 
@@ -592,7 +603,7 @@ Lark 后台不开放 WebSocket 长连接，需要用 **Webhook 模式**。详见
 
 | | 官方插件 | 独立桥接（本项目） |
 |---|---|---|
-| 安装方式 | `openclaw plugins install` | `git clone` + `npm install` |
+| 安装方式 | OpenClaw ≥ 2026.2 已内置 | `git clone` + `npm install` |
 | 进程 | 和网关同进程 | 独立进程 |
 | 崩溃影响 | 可能影响网关 | **互不影响** |
 | 维护 | 随 OpenClaw 更新 | 需自行维护 |
