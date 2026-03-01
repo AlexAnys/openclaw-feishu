@@ -417,6 +417,14 @@ openclaw gateway install
   ```
 - **DNS 问题**：如果你在国内使用代理，确保 `open.feishu.cn` 走直连（不走代理）
 
+### 开了代理（Clash / V2Ray）后连不上？
+
+日志报 `400 The plain HTTP request was sent to HTTPS port`，token 和 WebSocket 都失败。
+
+**原因**：Axios 自动读取 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量，将飞书请求以明文 HTTP 发到 443 端口，被服务端拒绝。
+
+**解决**：通过 `NO_PROXY` 环境变量排除飞书域名，或在代理规则中将 `feishu.cn` 设为直连。
+
 ### 发图片 / 发文件，AI 看不到
 
 1. **检查权限**：必须有 `im:resource` 权限
