@@ -323,6 +323,8 @@ rm -f ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist
 ### 第七步：在 OpenClaw 中配置飞书
 
 > OpenClaw ≥ 2026.2 已内置飞书插件，**不需要额外安装**，直接配置即可。
+>
+> 💡 如果你在首次 `openclaw setup` 时看到 "Install Feishu plugin?"，选择 **"Download from npm"** 即可进入配置流程。选了 "Skip" 也没关系，用下面的命令随时添加。
 
 打开 **终端（Terminal）**：
 
@@ -454,6 +456,12 @@ openclaw pairing approve feishu <配对码>
 ```
 
 批准后这个飞书用户就可以正常和机器人对话了。这是一次性操作。
+
+### 首次 setup 提示 "Install Feishu plugin?"
+
+这是正常的。OpenClaw 已内置飞书插件，但向导默认需要你确认启用。选择 **"Download from npm"** 即可，之后会直接进入 App ID / App Secret 的配置步骤。
+
+如果选了 "Skip for now"，可以随时通过 `openclaw channels add` 手动添加飞书渠道。
 
 ### 提示 "duplicate plugin id detected"
 
