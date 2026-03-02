@@ -49,7 +49,7 @@
 
 - [从旧版迁移到官方插件（保姆级）](#-从旧版迁移到官方插件保姆级)
 - [新手教程：从零配置飞书 AI 机器人](#-新手教程从零配置飞书-ai-机器人)
-- [常见问题 & 排查清单](#-常见问题--排查清单)
+- [常见问题 & 排查清单](#-常见问题--排查清单)（含 [API 配额耗尽](#api-配额被耗尽没怎么用却超限了) 排查）
 - [进阶配置参考](#-进阶配置参考)
 - [Lark（国际版）接入指南](#-lark国际版接入指南)
 - [独立桥接模式（进阶用户）](#-独立桥接模式进阶用户)
@@ -483,6 +483,26 @@ openclaw pairing approve feishu <配对码>
 rm -rf ~/.openclaw/extensions/feishu
 openclaw gateway restart
 ```
+
+### API 配额被耗尽（没怎么用却超限了）
+
+**现象**：飞书开放平台显示 API 月度调用量（免费 50,000 次）耗尽，但你几乎没有主动使用飞书机器人。
+
+**原因**：OpenClaw Gateway 每 60 秒对所有启用的 channel 执行一次健康探测。飞书插件的探测会调用 `bot/v3/info` API，每次计入月度配额。单台机器每月消耗约 27,000 次；**两台机器共用同一个飞书 App 就会超限**。
+
+**影响范围**：仅消耗 API 配额，不影响消息收发。消息通过 WebSocket 长连接接收，与 health check 无关。
+
+**修复**（发给你的 AI 助手即可）：
+
+```
+我的飞书 API 月度配额被意外耗尽了。这是 OpenClaw health check 导致的已知问题（每 60 秒调用一次 bot/v3/info API）。请帮我排查和修复：
+1. 运行 `openclaw channels status` 查看飞书是否启用
+2. 如果我不需要飞书对话功能，禁用它：`openclaw config set channels.feishu.enabled false && openclaw gateway restart`
+3. 如果有多台机器运行 OpenClaw，在不需要飞书的机器上禁用
+4. 如果需要保留飞书，确认只有一台机器启用（单台不会超限）
+```
+
+> 📖 详细背景和诊断步骤见 [docs/api-quota-fix.md](docs/api-quota-fix.md)
 
 ### Lark（国际版）用户
 
