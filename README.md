@@ -21,7 +21,7 @@
 
 > ### 📚 [awesome-openclaw-usecases-zh](https://github.com/AlexAnys/awesome-openclaw-usecases-zh) — 装好了 OpenClaw，然后呢？
 >
-> Skills 装了一堆，教程收藏了一堆，工具越来越多——但最缺的不是能力，而是**经过验证的场景**。
+> Skills 装了一堆，教程收藏了一堆，工具越来越多——但最缺的不是能力，而是**经过验证的最佳场景**。
 >
 > 39 个真实用例，含飞书、钉钉、企业微信、小红书等**国内生态适配方案**，每个都有完整步骤和可复制的提示词。
 >
