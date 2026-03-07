@@ -250,51 +250,176 @@ openclaw gateway install
 
 ## 🔄 从旧版迁移
 
-### 从本项目早期桥接/npm 插件迁移
+> 适用于：之前使用本项目（独立桥接或 npm 插件）的老用户。
+> 两种方式任选其一，效果一样。
 
-> 适用于：之前使用本项目独立桥接或 npm 插件的老用户。
-
-#### 迁移前须知
+### 迁移前须知
 
 - ✅ 你之前创建的飞书应用（机器人）**可以继续用**，不需要重新创建
 - ✅ App ID 和 App Secret 不变
 - ✅ 迁移后聊天记录不受影响（记录在飞书端）
 - ⚠️ 迁移过程中机器人会短暂离线（几分钟）
 
-#### 迁移步骤
+---
 
-1. **升级 OpenClaw**（≥ 2026.2 已内置飞书插件）：
-   ```bash
-   openclaw update
-   ```
+### 方式一：通过 OpenClaw 升级（推荐，最省事）
 
-2. **添加飞书渠道**：
-   ```bash
-   openclaw channels add
-   ```
-   选择 Feishu → 粘贴 App ID → 粘贴 App Secret。
+如果你的 OpenClaw 版本 ≥ 2026.2，升级后官方飞书插件已经内置，只需要：
 
-   > App ID / App Secret 在哪？之前可能保存在 `~/.clawdbot/secrets/feishu_app_secret`，或去 [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **凭证与基础信息** 复制。
+#### 1. 升级 OpenClaw
 
-3. **补全权限**：见上方教程的[第三步：配置权限](#第三步配置权限)，批量导入 JSON 即可（已有权限自动跳过）。
+```bash
+openclaw update
+```
 
-4. **清理旧组件**：
-   ```bash
-   # 移除旧的 npm 插件
-   openclaw plugins remove feishu-openclaw 2>/dev/null
+升级完成后会自动重启网关。
 
-   # 停掉旧的桥接服务
-   launchctl unload ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist 2>/dev/null
+#### 2. 添加飞书渠道
 
-   # 重启网关
-   openclaw gateway restart
-   ```
+```bash
+openclaw channels add
+```
 
-5. **验证**：
-   ```bash
-   openclaw logs --follow
-   ```
-   看到 `feishu ws connected` 或 `feishu provider ready` = 迁移完成 🎉
+选择 **Feishu** → 粘贴你的 **App ID** → 粘贴你的 **App Secret**。
+
+> App ID 和 App Secret 在哪？之前可能保存在 `~/.clawdbot/secrets/feishu_app_secret`，可以 `cat` 查看。
+> 如果找不到，去 [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **凭证与基础信息** 重新复制。
+
+#### 3. 补全飞书应用权限
+
+官方插件支持图片、文件、流式输出等更多功能，需要在飞书开放平台补几个权限：
+
+1. 打开 [飞书开放平台](https://open.feishu.cn/app) → 进入你的应用
+2. 进入 **权限管理** → 点击 **批量导入**
+3. 粘贴以下内容一键导入：
+
+```json
+{
+  "scopes": {
+    "tenant": [
+      "aily:file:read",
+      "aily:file:write",
+      "application:application.app_message_stats.overview:readonly",
+      "application:application:self_manage",
+      "application:bot.menu:write",
+      "cardkit:card:write",
+      "contact:user.employee_id:readonly",
+      "corehr:file:download",
+      "docs:document.content:read",
+      "event:ip_list",
+      "im:chat",
+      "im:chat.access_event.bot_p2p_chat:read",
+      "im:chat.members:bot_access",
+      "im:message",
+      "im:message.group_at_msg:readonly",
+      "im:message.group_msg",
+      "im:message.p2p_msg:readonly",
+      "im:message:readonly",
+      "im:message:send_as_bot",
+      "im:resource",
+      "sheets:spreadsheet",
+      "wiki:wiki:readonly"
+    ],
+    "user": [
+      "aily:file:read",
+      "aily:file:write",
+      "im:chat.access_event.bot_p2p_chat:read"
+    ]
+  }
+}
+```
+
+> 已有的权限会自动跳过，不会重复添加。
+
+4. 导入后 → **创建新版本** → **发布**（让新权限生效）
+
+#### 4. 清理旧插件/桥接
+
+```bash
+# 移除旧的 npm 插件（如果装过）
+openclaw plugins remove feishu-openclaw 2>/dev/null
+
+# 停掉旧的桥接服务（如果用过独立桥接）
+launchctl unload ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist 2>/dev/null
+
+# 重启网关
+openclaw gateway restart
+```
+
+然后跳到下方 [验证](#验证) 确认一切正常。
+
+---
+
+### 方式二：不升级 OpenClaw，只加飞书
+
+适用于不想整体升级 OpenClaw、只想加飞书的情况。
+
+> **注意**：OpenClaw ≥ 2026.2 已内置飞书插件，**不需要** `openclaw plugins install`。直接配置即可。
+
+#### 1. 准备好你的飞书凭证
+
+- **App ID**：格式如 `cli_xxxxxxxxx`
+- **App Secret**
+
+> 之前可能保存在 `~/.clawdbot/secrets/feishu_app_secret`，可以 `cat` 查看。
+> 如果找不到，去 [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **凭证与基础信息** 重新复制。
+
+#### 2. 补全飞书应用权限
+
+（同方式一的第 3 步，权限 JSON 一样，这里不重复粘贴——往上翻到方式一的权限 JSON 复制即可。）
+
+1. [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **权限管理** → **批量导入** → 粘贴上方 JSON
+2. 导入后 → **创建新版本** → **发布**
+
+#### 3. 配置飞书渠道
+
+```bash
+# 添加飞书渠道（交互式引导）
+openclaw channels add
+#    → 选择 Feishu
+#    → 粘贴 App ID
+#    → 粘贴 App Secret
+
+# 移除旧的 npm 插件（如果装过）
+openclaw plugins remove feishu-openclaw 2>/dev/null
+
+# 停掉旧的桥接服务（如果用过独立桥接）
+launchctl unload ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist 2>/dev/null
+
+# 重启网关
+openclaw gateway restart
+```
+
+---
+
+### 验证
+
+```bash
+# 查看日志，确认飞书连接成功
+openclaw logs --follow
+```
+
+日志中看到类似 `feishu ws connected` 或 `feishu provider ready` 就说明连上了。
+
+在飞书里给机器人发一条消息，正常收到回复 = 迁移完成 🎉
+
+> **配对授权**：如果机器人回复了一个配对码，在终端运行：
+> ```bash
+> openclaw pairing approve feishu <配对码>
+> ```
+> 授权后就能正常对话了。这是一次性操作。
+
+### 迁移后清理（可选）
+
+稳定运行几天后，可以清理旧文件：
+
+```bash
+# 删除旧的 launchd 配置（桥接用户）
+rm -f ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist
+
+# 旧的桥接项目文件夹可以归档或删除
+# （建议先保留一段时间，确认没问题再删）
+```
 
 ### 从 OpenClaw 内置插件迁移到飞书官方插件
 

@@ -74,7 +74,7 @@ openclaw gateway run
 ### 第四步：配对 & 授权
 
 1. 在飞书中给机器人发消息，获取配对码
-2. 终端执行：`openclaw pairing approve feishu --notify`
+2. 终端执行：`openclaw pairing approve feishu <配对码>`
 3. 点击授权卡片完成 OAuth 授权（让 OpenClaw 能以你的身份操作飞书）
 
 > 💡 也可以之后在对话框中输入 `/feishu auth` 批量完成授权。
