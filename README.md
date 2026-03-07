@@ -11,7 +11,7 @@
 
 - **(a) 飞书官方插件** — 飞书团队开发维护，支持以用户身份操作文档、日历、任务等
 - **(b) OpenClaw 内置飞书插件** — OpenClaw 社区维护（`@openclaw/feishu`），OpenClaw ≥ 2026.2 已内置
-- **(c) 本项目插件** — 本仓库早期开发的社区飞书插件（已停止维护）
+- **(c) 本项目插件** — 本仓库早期开发的社区飞书插件
 
 **👉 想了解飞书官方和 OpenClaw 内置插件的区别？** 看 [两个插件怎么选](#-飞书官方-vs-openclaw-内置怎么选)
 
@@ -21,21 +21,11 @@
 
 > ### 📚 [awesome-openclaw-usecases-zh](https://github.com/AlexAnys/awesome-openclaw-usecases-zh) — 装好了 OpenClaw，然后呢？
 >
-> Skills 装了一堆，教程收藏了一堆，工具越来越多——但最缺的不是能力，而是**经过验证的真实场景**：什么值得让 AI 干，怎么配才能跑通。
+> Skills 装了一堆，教程收藏了一堆，工具越来越多——但最缺的不是能力，而是**经过验证的场景**。
 >
-> 这个仓库收录了 **39 个经过验证的最佳用例**，尤其包含飞书、钉钉、企业微信、小红书等**国内生态适配方案**，每个用例都有完整步骤和可复制的提示词。
+> 39 个真实用例，含飞书、钉钉、企业微信、小红书等**国内生态适配方案**，每个都有完整步骤和可复制的提示词。
 >
 > **[查看中文最佳用例合集 →](https://github.com/AlexAnys/awesome-openclaw-usecases-zh)**
-
----
-
-> ### 🚀 [OpenCrew](https://github.com/AlexAnys/opencrew) — 把你的 OpenClaw 变成一支 AI 团队
->
-> 多个 Agent 各管各的领域，Slack 频道=岗位，经验自动沉淀。
->
-> 3 个 Agent 起步 · 10 分钟部署 · 不用写代码
->
-> **[查看 GitHub →](https://github.com/AlexAnys/opencrew)**
 
 ---
 
@@ -69,6 +59,16 @@
 - [Lark（国际版）接入指南](#-lark国际版接入指南)
 - [更新日志](#-更新日志)
 - [链接](#-链接)
+
+---
+
+> ### 🚀 [OpenCrew](https://github.com/AlexAnys/opencrew) — 把你的 OpenClaw 变成一支 AI 团队
+>
+> 多个 Agent 各管各的领域，Slack 频道=岗位，经验自动沉淀。
+>
+> 3 个 Agent 起步 · 10 分钟部署 · 不用写代码
+>
+> **[查看 GitHub →](https://github.com/AlexAnys/opencrew)**
 
 ---
 
