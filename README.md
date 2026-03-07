@@ -5,6 +5,16 @@
 
 ---
 
+### 📚 [awesome-openclaw-usecases-zh](https://github.com/AlexAnys/awesome-openclaw-usecases-zh) — 装好了 OpenClaw，然后呢？
+>
+> Skills 装了一堆，教程收藏了一堆，工具越来越多——但最缺的不是能力，而是**经过国内适配和验证的场景**。
+>
+> 39 个真实用例，含飞书、钉钉、企业微信、小红书等**国内生态适配方案**，每个都有完整步骤和可复制的提示词。
+>
+> **[查看中文最佳用例合集 →](https://github.com/AlexAnys/awesome-openclaw-usecases-zh)**
+
+---
+
 ## 📢 飞书官方插件上线（2026.3.6）
 
 飞书团队正式推出了 OpenClaw 飞书官方插件。目前飞书接入 OpenClaw 共有三种插件方式：
@@ -16,16 +26,6 @@
 **👉 想了解飞书官方和 OpenClaw 内置插件的区别？** 看 [两个插件怎么选](#-飞书官方-vs-openclaw-内置怎么选)
 
 **👉 本项目插件的老用户？** 看 [如何迁移到飞书官方或 OpenClaw 内置插件](#-从旧版迁移)
-
----
-
-> ### 📚 [awesome-openclaw-usecases-zh](https://github.com/AlexAnys/awesome-openclaw-usecases-zh) — 装好了 OpenClaw，然后呢？
->
-> Skills 装了一堆，教程收藏了一堆，工具越来越多——但最缺的不是能力，而是**经过国内适配和验证的场景**。
->
-> 39 个真实用例，含飞书、钉钉、企业微信、小红书等**国内生态适配方案**，每个都有完整步骤和可复制的提示词。
->
-> **[查看中文最佳用例合集 →](https://github.com/AlexAnys/awesome-openclaw-usecases-zh)**
 
 ---
 
