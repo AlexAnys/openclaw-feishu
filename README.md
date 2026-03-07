@@ -30,11 +30,13 @@
 
 ---
 
-> ### 🌏 Lark（国际版）用户
+> ### 📚 [awesome-openclaw-usecases-zh](https://github.com/AlexAnys/awesome-openclaw-usecases-zh) — 装好了 OpenClaw，然后呢？
 >
-> Lark 不支持 WebSocket，需要用 **Webhook 模式** + Cloudflare Tunnel。
+> Skills 装了一堆，教程收藏了一堆，工具越来越多——但最缺的不是能力，而是**经过验证的真实场景**：什么值得让 AI 干，怎么配才能跑通。
 >
-> **[查看 Lark 接入指南 →](#-lark国际版接入指南)**
+> 这个仓库收录了 **39 个经过验证的最佳用例**，尤其包含飞书、钉钉、企业微信、小红书等**国内生态适配方案**，每个用例都有完整步骤和可复制的提示词。
+>
+> **[查看中文最佳用例合集 →](https://github.com/AlexAnys/awesome-openclaw-usecases-zh)**
 
 ---
 
