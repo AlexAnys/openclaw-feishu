@@ -1,25 +1,48 @@
 # feishu-openclaw
 
-飞书 × OpenClaw 保姆级配置指南 & 社区支持
-**让每个人都能用飞书轻松接入Openclaw (原Clawdbot）。**
+飞书 × OpenClaw 配置指南 & 社区支持
+**让每个人都能用飞书轻松接入 OpenClaw（原 Clawdbot）。**
 
 ---
 
-> ### 🌏 新：Lark（国际版）用户现在可以接入了
+## ⚡ 三种接入方式，一表看懂
+
+飞书接入 OpenClaw 目前有三种方式。**先看这个表，再决定用哪个：**
+
+| | 飞书官方插件 🆕 | OpenClaw 内置插件 | 本项目早期桥接 |
+|---|---|---|---|
+| **一句话介绍** | 飞书团队开发，以**你的身份**操作飞书 | OpenClaw 社区维护，以**机器人身份**操作飞书 | 本项目早期独立开发的桥接程序（已停止维护） |
+| **消息收发** | ✅ | ✅ | ✅ |
+| **文档读写** | ✅ 创建 + 编辑 + 读取 | ✅ 读取为主 | ❌ |
+| **多维表格** | ✅ 完整 CRUD | ✅ 基础读写 | ❌ |
+| **日历日程** | ✅ | ❌ | ❌ |
+| **任务管理** | ✅ | ❌ | ❌ |
+| **消息搜索** | ✅ | ❌ | ❌ |
+| **以用户身份操作** | ✅（OAuth 授权） | ❌（机器人身份） | ❌ |
+| **安装方式** | 飞书提供的 CLI 工具 | OpenClaw ≥ 2026.2 已内置 | git clone（已停维） |
+| **维护方** | 飞书官方 | OpenClaw 社区 | 本项目（已停维） |
+| **适合谁** | 想让 AI 帮你操作飞书的用户 | 只需要消息对话 + 基础文档的用户 | — |
+
+> **简单来说**：
+> - 想让 AI **帮你干活**（写文档、建表格、约日程）→ 用**飞书官方插件**
+> - 只需要**聊天对话** + 读文档 → **OpenClaw 内置插件**已经够用
+> - 早期桥接已停止维护，建议迁移到上面两个方案之一
+
+---
+
+> ### 🌏 Lark（国际版）用户
 >
-> Lark 不支持 WebSocket，之前只能干瞪眼。现在新增 **Webhook 模式** + Cloudflare Tunnel 方案，四步搞定。
+> Lark 不支持 WebSocket，需要用 **Webhook 模式** + Cloudflare Tunnel。
 >
 > **[查看 Lark 接入指南 →](#-lark国际版接入指南)**
 
 ---
 
-> ### 🚀 新项目：[OpenCrew](https://github.com/AlexAnys/opencrew) — 把你的 OpenClaw 变成一支 AI 团队
+> ### 🚀 [OpenCrew](https://github.com/AlexAnys/opencrew) — 把你的 OpenClaw 变成一支 AI 团队
 >
-> 一个 Agent 承担所有事情时，上下文会膨胀、经验会丢失、你会变成瓶颈。
+> 多个 Agent 各管各的领域，Slack 频道=岗位，经验自动沉淀。
 >
-> **OpenCrew 的解法**：多个 Agent 各管各的领域，Slack 频道=岗位，经验自动沉淀，可逆操作无需你确认。
->
-> 3 个 Agent 起步 · 10 分钟部署 · 不用写代码 · 不影响你现有的 OpenClaw
+> 3 个 Agent 起步 · 10 分钟部署 · 不用写代码
 >
 > **[查看 GitHub →](https://github.com/AlexAnys/opencrew)**
 
@@ -27,19 +50,18 @@
 
 ## 致社区
 
-感谢大家一直以来的支持与信任。作为一个接触 GitHub 不久的业余选手，过程中难免更新不及时或出现问题，浪费大家时间深表歉意，真心感谢每一位的体谅与包容 🙏
+感谢大家一直以来的支持与信任 🙏
 
 本项目最初是为了让飞书用户能更方便地接入 AI 助手——从独立桥接、到 npm 插件，再到一路踩坑填坑，这些都是大家的反馈推着走过来的。
 
-现在 OpenClaw 已经内置了官方飞书插件（`@openclaw/feishu`），功能更完整、维护更及时。**这是件好事**——说明飞书 + AI 这条路走通了，社区的需求被看到了。
+现在，不仅 OpenClaw 内置了飞书插件（`@openclaw/feishu`），飞书团队也推出了官方的 OpenClaw 插件（`feishu-openclaw-plugin`）。**这是件好事**——说明飞书 + AI 这条路走通了，社区的需求被看到了。
 
 **本项目会继续为大家服务：**
 
-- 🎯 为非技术背景的伙伴提供**最友好的配置入口**
-- 🔄 为老用户提供**保姆级迁移指南**
-- 🆕 为新用户提供**从零开始的新手教程**
+- 🎯 为非技术背景的伙伴提供**最友好的入门引导**
+- 📊 帮你理清不同方案的区别，选对适合自己的路径
 - 🔧 **常见问题答疑** & 排查清单——官方文档没覆盖到的坑，这里帮你踩
-- 🌉 独立桥接模式依然可用（进阶场景）
+- 🔄 为老用户提供**迁移指南**
 
 遇到问题随时开 Issue，我们一起解决。
 
@@ -47,196 +69,67 @@
 
 ## 📋 目录
 
-- [从旧版迁移到官方插件（保姆级）](#-从旧版迁移到官方插件保姆级)
-- [新手教程：从零配置飞书 AI 机器人](#-新手教程从零配置飞书-ai-机器人)
+- [飞书官方插件（安装指南）](#-飞书官方插件)
+- [飞书官方 vs OpenClaw 内置：怎么选？](#-飞书官方-vs-openclaw-内置怎么选)
+- [OpenClaw 内置插件教程（从零配置）](#-openclaw-内置插件教程从零配置)
+- [从旧版迁移](#-从旧版迁移)
 - [常见问题 & 排查清单](#-常见问题--排查清单)（含 [API 配额耗尽](#api-配额被耗尽没怎么用却超限了) 排查）
 - [进阶配置参考](#-进阶配置参考)
 - [Lark（国际版）接入指南](#-lark国际版接入指南)
-- [独立桥接模式（进阶用户）](#-独立桥接模式进阶用户)
 - [更新日志](#-更新日志)
 - [链接](#-链接)
 
 ---
 
-## 🔄 从旧版迁移到官方插件（保姆级）
+## 🆕 飞书官方插件
 
-> 适用于：之前使用本项目（独立桥接或 npm 插件）的老用户。  
-> 两种方式任选其一，效果一样。
+飞书团队推出的 OpenClaw 官方插件，最大的不同是：**以你的身份操作飞书**（通过 OAuth 授权）。
 
-### 迁移前须知
+这意味着 AI 不只是"聊天机器人"，而是能直接帮你写文档、建多维表格、约日程、管理任务——就像一个能操作飞书的数字分身。
 
-- ✅ 你之前创建的飞书应用（机器人）**可以继续用**，不需要重新创建
-- ✅ App ID 和 App Secret 不变
-- ✅ 迁移后聊天记录不受影响（记录在飞书端）
-- ⚠️ 迁移过程中机器人会短暂离线（几分钟）
+**👉 [查看飞书官方插件安装指南](docs/feishu-official-plugin.md)**
+
+> 📖 飞书团队的完整图文教程：[OpenClaw 飞书官方插件上线 | 一文讲清功能、安装更新教程与常见问题](https://www.feishu.cn/content/article/7613711414611463386)
 
 ---
 
-### 方式一：通过 OpenClaw 升级（推荐，最省事）
+## 📊 飞书官方 vs OpenClaw 内置：怎么选？
 
-如果你的 OpenClaw 版本 ≥ 2026.2，升级后官方飞书插件已经内置，只需要：
+两个插件**不能同时使用**（安装官方插件时会自动禁用内置插件）。
 
-#### 1. 升级 OpenClaw
+| 维度 | 飞书官方插件 | OpenClaw 内置插件 |
+|---|---|---|
+| **操作身份** | 以**你本人**身份（OAuth） | 以**机器人**身份 |
+| **消息** | 读取、发送、回复、搜索 | 读取、发送、回复 |
+| **文档** | 创建 + 编辑 + 读取 | 读取为主 |
+| **多维表格** | 完整操作（表、字段、记录、视图） | 基础读写 |
+| **日历日程** | ✅ 创建/查询/修改/搜索/忙闲查询 | ❌ |
+| **任务管理** | ✅ 创建/查询/更新/完成/子任务 | ❌ |
+| **知识库** | ✅ 完整读写 | ✅ 只读 |
+| **云盘** | ✅ 上传/下载 | ✅ 基础操作 |
+| **流式输出** | ✅ | ✅ |
+| **安装复杂度** | 需要额外安装 CLI 工具 + OAuth 授权 | OpenClaw 内置，`openclaw channels add` 即可 |
+| **维护方** | 飞书团队 | OpenClaw 社区 |
+| **问题反馈** | 飞书反馈群 | 本项目 Issues / Discord |
 
-```bash
-openclaw update
-```
+### 选择建议
 
-升级完成后会自动重启网关。
+**选飞书官方插件，如果你：**
+- 想让 AI 帮你操作飞书（写文档、建表、约会议）
+- 需要日历、任务管理等高级功能
+- 想要以自己身份发消息（不是机器人名义）
 
-#### 2. 添加飞书渠道
-
-```bash
-openclaw channels add
-```
-
-选择 **Feishu** → 粘贴你的 **App ID** → 粘贴你的 **App Secret**。
-
-> App ID 和 App Secret 在哪？之前可能保存在 `~/.clawdbot/secrets/feishu_app_secret`，可以 `cat` 查看。  
-> 如果找不到，去 [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **凭证与基础信息** 重新复制。
-
-#### 3. 补全飞书应用权限
-
-官方插件支持图片、文件、流式输出等更多功能，需要在飞书开放平台补几个权限：
-
-1. 打开 [飞书开放平台](https://open.feishu.cn/app) → 进入你的应用
-2. 进入 **权限管理** → 点击 **批量导入**
-3. 粘贴以下内容一键导入：
-
-```json
-{
-  "scopes": {
-    "tenant": [
-      "aily:file:read",
-      "aily:file:write",
-      "application:application.app_message_stats.overview:readonly",
-      "application:application:self_manage",
-      "application:bot.menu:write",
-      "cardkit:card:write",
-      "contact:user.employee_id:readonly",
-      "corehr:file:download",
-      "docs:document.content:read",
-      "event:ip_list",
-      "im:chat",
-      "im:chat.access_event.bot_p2p_chat:read",
-      "im:chat.members:bot_access",
-      "im:message",
-      "im:message.group_at_msg:readonly",
-      "im:message.group_msg",
-      "im:message.p2p_msg:readonly",
-      "im:message:readonly",
-      "im:message:send_as_bot",
-      "im:resource",
-      "sheets:spreadsheet",
-      "wiki:wiki:readonly"
-    ],
-    "user": [
-      "aily:file:read",
-      "aily:file:write",
-      "im:chat.access_event.bot_p2p_chat:read"
-    ]
-  }
-}
-```
-
-> 已有的权限会自动跳过，不会重复添加。
-
-4. 导入后 → **创建新版本** → **发布**（让新权限生效）
-
-#### 4. 清理旧插件/桥接
-
-```bash
-# 移除旧的 npm 插件（如果装过）
-openclaw plugins remove feishu-openclaw 2>/dev/null
-
-# 停掉旧的桥接服务（如果用过独立桥接）
-launchctl unload ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist 2>/dev/null
-
-# 重启网关
-openclaw gateway restart
-```
-
-然后跳到下方 [验证](#验证) 确认一切正常。
+**选 OpenClaw 内置插件，如果你：**
+- 主要用飞书做聊天入口，让 AI 回答问题、执行本地任务
+- 不需要 AI 操作飞书文档/日历/任务
+- 偏好更简单的安装流程（内置即用）
 
 ---
 
-### 方式二：不升级 OpenClaw，只加飞书
+## 🚀 OpenClaw 内置插件教程（从零配置）
 
-适用于不想整体升级 OpenClaw、只想加飞书的情况。
-
-> **注意**：OpenClaw ≥ 2026.2 已内置飞书插件，**不需要** `openclaw plugins install`。直接配置即可。
-
-#### 1. 准备好你的飞书凭证
-
-- **App ID**：格式如 `cli_xxxxxxxxx`
-- **App Secret**
-
-> 之前可能保存在 `~/.clawdbot/secrets/feishu_app_secret`，可以 `cat` 查看。  
-> 如果找不到，去 [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **凭证与基础信息** 重新复制。
-
-#### 2. 补全飞书应用权限
-
-（同方式一的第 3 步，权限 JSON 一样，这里不重复粘贴——往上翻到方式一的权限 JSON 复制即可。）
-
-1. [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **权限管理** → **批量导入** → 粘贴上方 JSON
-2. 导入后 → **创建新版本** → **发布**
-
-#### 3. 配置飞书渠道
-
-```bash
-# 添加飞书渠道（交互式引导）
-openclaw channels add
-#    → 选择 Feishu
-#    → 粘贴 App ID
-#    → 粘贴 App Secret
-
-# 移除旧的 npm 插件（如果装过）
-openclaw plugins remove feishu-openclaw 2>/dev/null
-
-# 停掉旧的桥接服务（如果用过独立桥接）
-launchctl unload ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist 2>/dev/null
-
-# 重启网关
-openclaw gateway restart
-```
-
----
-
-### 验证
-
-```bash
-# 查看日志，确认飞书连接成功
-openclaw logs --follow
-```
-
-日志中看到类似 `feishu ws connected` 或 `feishu provider ready` 就说明连上了。
-
-在飞书里给机器人发一条消息，正常收到回复 = 迁移完成 🎉
-
-> **配对授权**：如果机器人回复了一个配对码，在终端运行：
-> ```bash
-> openclaw pairing approve feishu <配对码>
-> ```
-> 授权后就能正常对话了。这是一次性操作。
-
-### 迁移后清理（可选）
-
-稳定运行几天后，可以清理旧文件：
-
-```bash
-# 删除旧的 launchd 配置（桥接用户）
-rm -f ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist
-
-# 旧的桥接项目文件夹可以归档或删除
-# （建议先保留一段时间，确认没问题再删）
-```
-
----
-
-## 🚀 新手教程：从零配置飞书 AI 机器人
-
-> 适用于：第一次使用 OpenClaw + 飞书的新用户。  
-> 前提：已安装 OpenClaw 并正常运行（`openclaw gateway status` 能看到状态）。  
+> 适用于：第一次使用 OpenClaw + 飞书的新用户，选择 OpenClaw 内置插件方案。
+> 前提：已安装 OpenClaw 并正常运行（`openclaw gateway status` 能看到状态）。
 > 预计耗时：15–20 分钟。
 
 ### 第一步：创建飞书应用（机器人）
@@ -298,7 +191,7 @@ rm -f ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist
 
 ### 第四步：配置事件订阅
 
-> ⚠️ 这一步**必须在 OpenClaw 网关启动后**再做，否则保存会失败。  
+> ⚠️ 这一步**必须在 OpenClaw 网关启动后**再做，否则保存会失败。
 > 先做第五、六步，回来再做这一步也可以。
 
 1. 左侧菜单进入 **事件与回调** > **事件配置**
@@ -364,6 +257,66 @@ openclaw gateway install
 
 ---
 
+## 🔄 从旧版迁移
+
+### 从本项目早期桥接/npm 插件迁移
+
+> 适用于：之前使用本项目独立桥接或 npm 插件的老用户。
+
+#### 迁移前须知
+
+- ✅ 你之前创建的飞书应用（机器人）**可以继续用**，不需要重新创建
+- ✅ App ID 和 App Secret 不变
+- ✅ 迁移后聊天记录不受影响（记录在飞书端）
+- ⚠️ 迁移过程中机器人会短暂离线（几分钟）
+
+#### 迁移步骤
+
+1. **升级 OpenClaw**（≥ 2026.2 已内置飞书插件）：
+   ```bash
+   openclaw update
+   ```
+
+2. **添加飞书渠道**：
+   ```bash
+   openclaw channels add
+   ```
+   选择 Feishu → 粘贴 App ID → 粘贴 App Secret。
+
+   > App ID / App Secret 在哪？之前可能保存在 `~/.clawdbot/secrets/feishu_app_secret`，或去 [飞书开放平台](https://open.feishu.cn/app) → 你的应用 → **凭证与基础信息** 复制。
+
+3. **补全权限**：见上方教程的[第三步：配置权限](#第三步配置权限)，批量导入 JSON 即可（已有权限自动跳过）。
+
+4. **清理旧组件**：
+   ```bash
+   # 移除旧的 npm 插件
+   openclaw plugins remove feishu-openclaw 2>/dev/null
+
+   # 停掉旧的桥接服务
+   launchctl unload ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist 2>/dev/null
+
+   # 重启网关
+   openclaw gateway restart
+   ```
+
+5. **验证**：
+   ```bash
+   openclaw logs --follow
+   ```
+   看到 `feishu ws connected` 或 `feishu provider ready` = 迁移完成 🎉
+
+### 从 OpenClaw 内置插件迁移到飞书官方插件
+
+如果你正在使用 OpenClaw 内置插件，想切换到飞书官方插件：
+
+1. 按照 [飞书官方插件安装指南](docs/feishu-official-plugin.md) 执行安装
+2. 安装过程中会**自动禁用** OpenClaw 内置飞书插件
+3. 完成 OAuth 授权后即可使用
+
+> 如果想切回内置插件：卸载官方插件后重启网关，内置插件会自动恢复。
+
+---
+
 ## 🔧 常见问题 & 排查清单
 
 > 遇到问题先看这里。如果没找到答案，欢迎开 [Issue](https://github.com/AlexAnys/openclaw-feishu/issues)。
@@ -377,7 +330,7 @@ openclaw gateway install
 3. 订阅方式：选择 **「使用长连接接收事件」**
 4. **版本管理** → 创建新版本 → 发布上线
 
-> ⚠️ 配置事件订阅前，确保 OpenClaw/Clawdbot Gateway 已启动，否则长连接验证会失败。
+> ⚠️ 配置事件订阅前，确保 OpenClaw Gateway 已启动，否则长连接验证会失败。
 
 ### 机器人完全没反应（收不到消息）
 
@@ -389,14 +342,14 @@ openclaw gateway install
    ```
    如果没运行：`openclaw gateway restart`
 
-2. **飞书应用发布了吗？**  
+2. **飞书应用发布了吗？**
    去飞书开放平台 → 你的应用 → 版本管理，确认有已发布的版本
 
 3. **事件订阅配置了吗？**
    - 是否选了 **"使用长连接接收事件"**（不是 Webhook）
    - 是否添加了事件 `im.message.receive_v1`
 
-4. **权限够吗？**  
+4. **权限够吗？**
    至少需要：`im:message`、`im:message.p2p_msg:readonly`、`im:message:send_as_bot`
 
 5. **看日志**：
@@ -412,7 +365,6 @@ openclaw gateway install
 - **网络波动**：飞书 WebSocket 断开后通常会自动重连，但如果你的网络不稳定（尤其是 VPN/代理环境），可能频繁断连
 - **网关重启**：检查是否有什么在反复触发网关重启
   ```bash
-  # 查看最近的网关日志
   openclaw logs | grep -i "restart\|reconnect\|disconnect"
   ```
 - **DNS 问题**：如果你在国内使用代理，确保 `open.feishu.cn` 走直连（不走代理）
@@ -630,121 +582,6 @@ Lark 后台不开放 WebSocket 长连接，需要用 **Webhook 模式**。详见
 
 ---
 
-## 🌉 独立桥接模式（进阶用户）
-
-> 适用于：需要**进程隔离**（桥接崩溃不影响网关）或有**特殊定制需求**的用户。  
-> 大多数用户使用官方插件即可，无需桥接。
-
-### 插件 vs 桥接
-
-| | 官方插件 | 独立桥接（本项目） |
-|---|---|---|
-| 安装方式 | OpenClaw ≥ 2026.2 已内置 | `git clone` + `npm install` |
-| 进程 | 和网关同进程 | 独立进程 |
-| 崩溃影响 | 可能影响网关 | **互不影响** |
-| 维护 | 随 OpenClaw 更新 | 需自行维护 |
-| 适合场景 | 日常使用 | 生产 / 隔离部署 |
-
-### 快速启动
-
-```bash
-# 克隆项目
-git clone https://github.com/AlexAnys/feishu-openclaw.git
-cd feishu-openclaw
-
-# 安装依赖
-npm install
-
-# 配置凭证
-mkdir -p ~/.clawdbot/secrets
-echo "你的AppSecret" > ~/.clawdbot/secrets/feishu_app_secret
-chmod 600 ~/.clawdbot/secrets/feishu_app_secret
-
-# 启动
-FEISHU_APP_ID=cli_xxxxxxxxx node bridge.mjs
-```
-
-### 设为开机自启（launchd）
-
-```bash
-# 生成服务配置
-node setup-service.mjs
-
-# 加载服务
-launchctl load ~/Library/LaunchAgents/com.clawdbot.feishu-bridge.plist
-
-# 查看状态
-launchctl list | grep feishu
-```
-
-### 桥接日志
-
-```
-~/.clawdbot/logs/feishu-bridge.out.log   # 正常输出
-~/.clawdbot/logs/feishu-bridge.err.log   # 错误日志
-```
-
-### 调试模式
-
-```bash
-# 在项目目录创建 .env 文件
-echo "FEISHU_BRIDGE_DEBUG=1" > .env
-
-# 重启后查看详细日志
-tail -n 200 ~/.clawdbot/logs/feishu-bridge.err.log
-```
-
-### 桥接工作原理
-
-```
-飞书用户 ←→ 飞书云端 ←→ 桥接脚本（你的电脑） ←→ OpenClaw 网关
-```
-
-桥接使用飞书的 **WebSocket 长连接**接收消息——不需要公网 IP、不需要域名、不需要内网穿透。
-
----
-
-## 📝 更新日志
-
-### 2026.02.24 — Lark 支持 + Webhook 模式 (v0.4.0)
-
-- 🌏 新增 Lark（国际版）支持：`domain: "lark"` 配置
-- 🔗 新增 Webhook 连接模式：解决 Lark 无法使用 WebSocket 的问题
-- 📖 新增 Lark 接入指南：含 Cloudflare Tunnel 内网穿透教程
-- 🛡️ Lark 用户误配 WebSocket 时自动 fallback 到 Webhook 并提示
-- 🔧 端口冲突、graceful shutdown 等稳定性改进
-
-### 2026.02 — 定位转型
-
-本项目从独立桥接/插件转型为 **飞书 × OpenClaw 配置指南 & 社区支持中心**。
-
-OpenClaw 已内置官方飞书插件（`@openclaw/feishu`），本项目继续为社区提供：保姆级教程、迁移指南、常见问题答疑。
-
-### 2026.02.02 — 媒体功能大更新（桥接模式）
-
-- ✅ 飞书传图 → AI 能看图
-- ✅ 飞书传视频/文件 → 桥接可接收下载
-- ✅ AI 生图 → 自动回传飞书
-- ✅ 列表格式修复
-- ✅ 本地文件发送白名单安全控制
-
-### 2025.2.1
-
-同步更新飞书插件，适配 OpenClaw。
-
----
-
-## 🔗 链接
-
-- 📖 [OpenClaw 官方文档](https://docs.openclaw.ai)
-- 💬 [OpenClaw 社区 Discord](https://discord.com/invite/clawd)
-- 🐛 [本项目 Issues（提问 & 反馈）](https://github.com/AlexAnys/openclaw-feishu/issues)
-- 🔌 [GitHub: openclaw-feishu](https://github.com/AlexAnys/openclaw-feishu)（本项目）
-- 🌉 [GitHub: feishu-openclaw](https://github.com/AlexAnys/feishu-openclaw)（独立桥接）
-- 📦 [npm: feishu-openclaw](https://www.npmjs.com/package/feishu-openclaw)
-
----
-
 ## 🌏 Lark（国际版）接入指南
 
 > Lark 后台目前不开放 WebSocket 长连接能力，所以不能像飞书国内版那样"零公网"直连。
@@ -859,20 +696,71 @@ openclaw logs --follow
 
 ## 常见问题（快问快答）
 
-**Q: 需要服务器吗？**  
+**Q: 需要服务器吗？**
 不需要。飞书用 WebSocket 长连接，你的电脑（Mac / Windows / Linux）直接连飞书云端，不需要公网 IP。
 
-**Q: 电脑关机了怎么办？**  
+**Q: 电脑关机了怎么办？**
 机器人会离线。开机后自动重连（如果配了开机自启）。要 24/7 在线可以用一台常开的机器（Mac Mini、NAS、云服务器等）。
 
-**Q: 飞书免费版能用吗？**  
+**Q: 飞书免费版能用吗？**
 可以。自建应用和机器人功能对所有飞书版本开放。
 
-**Q: 能同时接 Telegram / 微信等其他渠道吗？**  
+**Q: 能同时接 Telegram / 微信等其他渠道吗？**
 可以。OpenClaw 原生支持多渠道，飞书只是其中之一，互不影响。
 
-**Q: 用了官方插件后，这个项目还有用吗？**  
-有。本项目持续提供配置教程、排查指南和社区答疑，遇到问题随时来这里找解决方案。
+**Q: 飞书官方插件和 OpenClaw 内置插件能同时用吗？**
+不能。安装飞书官方插件时会自动禁用 OpenClaw 内置插件。两者只能二选一。
+
+---
+
+## 📝 更新日志
+
+### 2026.03.07 — 飞书官方插件上线
+
+- 🆕 新增飞书官方插件介绍及对比
+- 📖 新增 [飞书官方插件安装指南](docs/feishu-official-plugin.md)
+- 🔄 更新项目定位：从"三方桥接→内置插件迁移"到"帮用户选对方案"
+- 🗑️ 移除早期独立桥接模式文档（已停止维护）
+
+### 2026.03.02 — API 配额排查
+
+- 🔧 新增 API 配额耗尽问题的根因分析和修复指南
+
+### 2026.02.24 — Lark 支持 + Webhook 模式 (v0.4.0)
+
+- 🌏 新增 Lark（国际版）支持：`domain: "lark"` 配置
+- 🔗 新增 Webhook 连接模式：解决 Lark 无法使用 WebSocket 的问题
+- 📖 新增 Lark 接入指南：含 Cloudflare Tunnel 内网穿透教程
+- 🛡️ Lark 用户误配 WebSocket 时自动 fallback 到 Webhook 并提示
+- 🔧 端口冲突、graceful shutdown 等稳定性改进
+
+### 2026.02 — 定位转型
+
+本项目从独立桥接/插件转型为 **飞书 × OpenClaw 配置指南 & 社区支持中心**。
+
+OpenClaw 已内置官方飞书插件（`@openclaw/feishu`），本项目继续为社区提供：保姆级教程、迁移指南、常见问题答疑。
+
+### 2026.02.02 — 媒体功能大更新（桥接模式）
+
+- ✅ 飞书传图 → AI 能看图
+- ✅ 飞书传视频/文件 → 桥接可接收下载
+- ✅ AI 生图 → 自动回传飞书
+- ✅ 列表格式修复
+- ✅ 本地文件发送白名单安全控制
+
+### 2025.2.1
+
+同步更新飞书插件，适配 OpenClaw。
+
+---
+
+## 🔗 链接
+
+- 📖 [飞书官方插件教程](https://www.feishu.cn/content/article/7613711414611463386)
+- 📖 [OpenClaw 官方文档](https://docs.openclaw.ai)
+- 💬 [OpenClaw 社区 Discord](https://discord.com/invite/clawd)
+- 🐛 [本项目 Issues（提问 & 反馈）](https://github.com/AlexAnys/openclaw-feishu/issues)
+- 🔌 [GitHub: openclaw-feishu](https://github.com/AlexAnys/openclaw-feishu)（本项目）
 
 ---
 
