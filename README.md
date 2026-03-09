@@ -80,6 +80,8 @@
 
 **👉 [查看飞书官方插件安装指南](docs/feishu-official-plugin.md)**
 
+> ⚠️ **OpenClaw 3.x 用户**：官方安装工具 `feishu-plugin-onboard` 有版本检查 bug（[#59](https://github.com/AlexAnys/openclaw-feishu/issues/59)），会误报版本过低。安装指南中已提供替代方式，直接 `openclaw plugins install @larksuiteoapi/feishu-openclaw-plugin` 即可绕过。
+
 > 📖 飞书团队的完整图文教程：[OpenClaw 飞书官方插件上线 | 一文讲清功能、安装更新教程与常见问题](https://www.feishu.cn/content/article/7613711414611463386)
 
 ---

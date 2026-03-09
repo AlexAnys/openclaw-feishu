@@ -41,6 +41,26 @@
 
 ### 第二步：安装插件
 
+> ⚠️ **OpenClaw ≥ 2026.3.x 用户注意**：官方 `feishu-plugin-onboard` 安装工具存在版本检查 bug（[#59](https://github.com/AlexAnys/openclaw-feishu/issues/59)），会误报"版本过低"。请使用下方的**替代安装方式**。飞书团队修复后此提示会移除。
+
+**替代安装方式（推荐，适用于所有版本）：**
+
+```bash
+# 直接安装官方插件（跳过 onboard CLI 的版本检查）
+openclaw plugins install @larksuiteoapi/feishu-openclaw-plugin
+```
+
+安装后手动配置凭证：
+
+```bash
+openclaw config set channels.feishu.accounts.main.appId "你的AppID"
+openclaw config set channels.feishu.accounts.main.appSecret "你的AppSecret"
+openclaw gateway restart
+```
+
+<details>
+<summary>原始安装方式（onboard CLI，OpenClaw 2.x 可用）</summary>
+
 在终端依次执行：
 
 ```bash
@@ -57,6 +77,8 @@ feishu-plugin-onboard install
 ```
 
 安装过程中会提示输入 App ID 和 App Secret（如果之前已关联飞书应用，可选沿用）。
+
+</details>
 
 ### 第三步：启动 & 配置事件订阅
 
