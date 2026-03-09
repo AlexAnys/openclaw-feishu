@@ -27,7 +27,7 @@
 - 已安装 OpenClaw 并正常运行
 - 已在飞书开放平台创建好应用（机器人）并配置好权限
 
-> ⚠️ 如果之前用的是 OpenClaw 内置飞书插件，安装官方插件时会**自动禁用**内置插件，无需手动处理。
+> ⚠️ **飞书官方插件和 OpenClaw 内置插件互斥，只能启用一个。** 安装官方插件时会自动禁用内置插件，无需手动处理。如果安装后出现 `duplicate plugin id` 报错，说明两个插件同时存在，运行 `rm -rf ~/.openclaw/extensions/feishu && openclaw gateway restart` 即可修复。
 
 ### 第一步：创建飞书应用 & 配置权限
 
