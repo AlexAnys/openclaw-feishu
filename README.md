@@ -17,13 +17,11 @@
 
 ## 🆕 飞书官方开源 Lark CLI（2026.3.28）
 
-飞书官方开源了 [Lark CLI](https://github.com/larksuite/cli)（MIT 协议）——一行命令调飞书 **2500+ API**，覆盖消息、文档、多维表格、日历、邮箱、任务、知识库等 11 个业务领域，内置 **19 个 AI Agent Skills**。
+飞书官方开源了 [Lark CLI](https://github.com/larksuite/cli)（MIT 协议）——让你的 AI Agent 直接操作飞书：搜文档、读妙记、查日历、发消息、操作多维表格…… **2500+ API，11 个业务领域，19 个 AI Agent Skills**。
 
-**这意味着什么？** 你的 AI Agent（OpenClaw、Claude Code、Cursor 等）现在可以直接通过命令行操作飞书的几乎所有功能——搜文档、读妙记、查日历、发消息、操作多维表格……不需要额外写代码。
+安装只需要告诉你的 Agent 一句话，你只需要点一个授权链接。
 
-**和插件/桥接的关系**：插件/桥接解决"在飞书里和 AI 对话"，Lark CLI 解决"让 AI 主动操作飞书里的一切"——**两者互补**。
-
-👉 **[Lark CLI 上手指南（保姆级）](docs/lark-cli-guide.md)**
+👉 **[Lark CLI 上手指南](docs/lark-cli-guide.md)**
 
 ---
 
