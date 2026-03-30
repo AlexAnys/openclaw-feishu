@@ -35,103 +35,136 @@
 
 ---
 
-## 安装：一句话搞定
+## 安装：告诉你的 Agent 一句话
 
-> **前提**：你需要一个飞书自建应用的 App ID 和 App Secret。
-> 如果你已经在用飞书插件/桥接，可以复用同一个应用。
-> 如果还没有，参考 [创建飞书应用](../README.md#第一步创建飞书应用机器人)。
+**复制下面这段话，发给你的 OpenClaw / Claude Code Agent：**
 
-**把下面这段话发给你的 OpenClaw Agent：**
+> 已有飞书应用（在用飞书插件/桥接）的用户：
 
 ```
 帮我安装飞书 Lark CLI。
-我的飞书 App ID 是 cli_xxxxxxxxx，App Secret 是 xxxxxxxxx。
-安装完成后给我一个授权链接，我去浏览器里点一下就行。
+参考这个指南：https://github.com/AlexAnys/openclaw-feishu/blob/main/docs/lark-cli-guide.md
+我已经有飞书应用了，App ID 是 cli_xxxxxxxxx，App Secret 是 xxxxxxxxx。
+装好后给我一个授权链接就行。
 ```
 
-Agent 会自动完成安装、配置、发起 OAuth，然后给你一个授权链接。你**点击链接 → 在飞书里确认授权** → 完成。整个过程你只需要做这一步。
+> 还没有飞书应用的用户：
+
+```
+帮我安装飞书 Lark CLI。
+参考这个指南：https://github.com/AlexAnys/openclaw-feishu/blob/main/docs/lark-cli-guide.md
+我还没有飞书应用，帮我一起创建。
+```
+
+**你只需要做一件事**：Agent 会给你一个授权链接，在浏览器中打开 → 用飞书账号确认 → 完成 ✅
 
 > ⏱ 授权链接 10 分钟内有效。过期了让 Agent 重新生成一个就行。
 >
-> 🔄 Token 有效期：Access Token 2 小时（自动续期），Refresh Token 7 天。超过 7 天没用的话，让 Agent 重新走一次授权。
+> 🔄 Token 有效期：Access Token 2 小时（自动续期），Refresh Token 7 天。超过 7 天没用的话，让 Agent 重新走一次授权即可。
 
 ---
 
-## 进阶：给 Agent 的技术参考
+## 以下内容供 Agent 参考
 
-> 以下内容面向 AI Agent 和有技术背景的用户。普通用户不需要阅读——让你的 Agent 参考即可。
+> **写给 AI Agent**：当用户让你安装 Lark CLI 时，请参考以下内容完成安装。用户只需要做一步：点击授权链接。其余步骤由你执行。
 
-### 安装步骤（Agent 执行）
+### 背景知识
+
+**Lark CLI 是什么**：飞书官方开源的命令行工具（[larksuite/cli](https://github.com/larksuite/cli)），通过 npm 分发，Go 编写，支持 macOS / Linux / Windows。
+
+**三层命令体系**：
+- **Shortcuts**（`+` 前缀）：高频操作的封装，如 `lark-cli docs +search`、`lark-cli calendar +agenda`，对 Agent 最友好
+- **API Commands**：1:1 映射飞书 Open API 端点，如 `lark-cli calendar events list`
+- **Raw API**：`lark-cli api GET /open-apis/...`，可调用 2500+ 任意端点
+
+**AI Agent Skills**：CLI 配套 19 个 Skill 文件（覆盖 base/calendar/contact/doc/drive/im/mail/sheets/task/vc/wiki 等），通过 `npx skills` 安装后会 symlink 到 Claude Code、OpenClaw、Cursor 等 Agent 框架的 skills 目录，让 Agent 了解飞书 API 的使用模式。
+
+**认证方式**：OAuth 2.0 Device Flow。`lark-cli auth login` 生成一个验证链接，用户在浏览器中授权，CLI 获得用户身份的 Access Token。需要一个飞书自建应用的 App ID 和 App Secret。
+
+**凭据复用**：如果用户已经在使用飞书插件/桥接（如 `@openclaw/feishu` 或 `feishu-openclaw`），可以复用同一个飞书应用的 App ID 和 App Secret。Agent 可以尝试从 OpenClaw 配置（`~/.openclaw/openclaw.json` 的 `channels.feishu.accounts`）中读取已有凭据。
+
+### 安装步骤
 
 ```bash
 # 1. 安装 CLI
 npm install -g @larksuite/cli
 
-# 2. 配置飞书应用（从 stdin 读 secret，不暴露在进程列表）
+# 2. 配置飞书应用
+#    方式 A：用户提供了 App ID 和 Secret
 echo "APP_SECRET" | lark-cli config init --app-id cli_xxxxxxxxx --app-secret-stdin --brand feishu
 
-# 3. 发起 OAuth 授权（全部域权限）
-lark-cli auth login --domain all --no-wait --json
-# → 输出 JSON 含 verification_url 和 device_code
-# → 把 verification_url 给用户，让用户在浏览器中打开并确认授权
+#    方式 B：用户没有飞书应用，帮用户创建
+#    会输出一个浏览器链接，用户打开后在飞书开放平台创建应用
+lark-cli config init --new
 
-# 4. 用户授权后，用 device_code 完成登录
+# 3. 发起 OAuth 授权
+lark-cli auth login --domain all --no-wait --json
+# 输出 JSON，包含：
+#   verification_url — 给用户在浏览器中打开
+#   device_code — 后续用于完成登录
+# ⚠️ --no-wait 立即返回，不阻塞
+
+# 4. 把 verification_url 发给用户，等待用户在浏览器中完成授权
+
+# 5. 用户授权后，用 device_code 完成登录
 lark-cli auth login --device-code "DEVICE_CODE_FROM_STEP_3"
 # → OK: 登录成功!
 
-# 5. 验证
+# 6. 验证连接
 lark-cli doctor
-# → 全部 pass
+# 所有检查项应为 pass
 
-# 6. 安装 AI Agent Skills（19 个，覆盖所有业务域）
+# 7. 安装 AI Agent Skills
 npx skills add larksuite/cli -y -g
 ```
 
-> **关键点**：第 3 步 `--no-wait` 会立即返回 JSON（不阻塞），第 4 步需要等用户完成浏览器授权后才能执行。Agent 应该把授权链接发给用户，等用户确认后再执行第 4 步。
+**关键注意事项**：
+- 步骤 2 必须在步骤 3 之前，否则会报 `not configured` 错误
+- 步骤 3 的 `--no-wait` 立即返回 JSON，不阻塞进程
+- 步骤 5 必须等用户完成浏览器授权后才能执行，否则会超时
+- 授权链接 10 分钟有效，过期需重新执行步骤 3
 
-### 如果没有飞书应用
-
-用户没有 App ID / App Secret 时，CLI 可以帮忙创建：
-
-```bash
-lark-cli config init --new
-# 会输出一个浏览器链接，用户打开后在飞书开放平台创建应用
-```
-
-### 命令体系
+### 安装后可用的命令速查
 
 ```bash
-# Shortcuts — 最常用的操作，人和 Agent 都友好
-lark-cli calendar +agenda
-lark-cli docs +search --query "OKR" --format pretty
-lark-cli contact +search-user --query "张三"
+# 搜索文档
+lark-cli docs +search --query "关键词" --format pretty
+
+# 读取文档内容
 lark-cli docs +fetch --doc "文档URL或token"
-lark-cli im +chat-search --query "项目组"
+
+# 查日历
+lark-cli calendar +agenda
+
+# 搜人
+lark-cli contact +search-user --query "姓名"
+
+# 搜群
+lark-cli im +chat-search --query "群名"
+
+# 搜会议/妙记
+lark-cli vc +search --start "2026-03-25" --end "2026-03-31"
+
+# 查任务
 lark-cli task +get-my-tasks
-lark-cli mail +triage --max 5
-lark-cli vc +search --start "2026-03-25"
 
-# API Commands — 1:1 映射飞书端点
-lark-cli calendar events list --params '{"calendar_id":"primary"}'
+# 操作多维表格
+lark-cli base +record-list --app "app_token" --table "table_id"
 
-# Raw API — 直接调 2500+ 任意端点
-lark-cli api GET /open-apis/calendar/v4/calendars
+# 查看命令参数定义
+lark-cli schema <service.resource.method> --format pretty
 ```
 
-### 常用 flags
+**常用 flags**：
+- `--format pretty|table|csv|json` — 输出格式（默认 json）
+- `--dry-run` — 预览请求，不实际执行
+- `--page-all` — 自动翻页获取全部结果
+- `--as user|bot` — 切换执行身份
 
-```bash
---format pretty|table|csv|json   # 输出格式（默认 json）
---dry-run                        # 预览请求，不实际执行
---page-all                       # 自动翻页
---as user|bot                    # 身份切换
-```
+### Token 续期
 
-### 查看 API 参数定义
-
-```bash
-lark-cli schema calendar.events.list --format pretty
-```
+- Access Token 有效期 2 小时，CLI 会自动用 Refresh Token 续期
+- Refresh Token 有效期 7 天，过期后需重新执行 `lark-cli auth login --domain all`
 
 ---
 
